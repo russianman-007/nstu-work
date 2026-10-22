@@ -1,5 +1,4 @@
 ﻿using System;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 class Program
 {
@@ -7,7 +6,7 @@ class Program
     {
         var org1 = new Organization("АО 'Географ'", "5295169165");
         var date1 = new Date(1, 1, 2026);
-        var date2 = new Date(1, 1, 2026);
+        var date2 = new Date(3, 1, 2026);
 
         var org2 = new Organization("ООО 'Техно-ДНС'", "6328158627");
         var date3 = new Date(25, 1, 2026);
