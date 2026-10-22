@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Numerics;
 
 [TestClass]
 public class VectorExtensionsTests
@@ -39,6 +38,11 @@ public class VectorExtensionsTests
     public void RemovePositive_NullVector_ThrowsArgumentNullException()
     {
         Vector v = null;
-        v.RemovePositive();
+        try
+        {
+            v.RemovePositive();
+            Assert.Fail("Ожидалось исключение ArgumentNullException, но его не было");
+        }
+        catch (ArgumentNullException){}
     }
 }

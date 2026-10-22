@@ -27,12 +27,22 @@ public class StringExtensionsTests
     [TestMethod]
     public void CutStart_NegativeCount_ThrowsArgumentException()
     {
-        "test".CutStart(-1);
+        try
+        {
+            "test".CutStart(-1);
+            Assert.Fail("Ожидалось исключение ArgumentException, но его не было");
+        }
+        catch (ArgumentException){}
     }
 
     [TestMethod]
     public void CutStart_NullString_ThrowsArgumentNullException()
     {
-        ((string)null).CutStart(2);
+        try
+        {
+            ((string)null).CutStart(2);
+            Assert.Fail("Ожидалось исключение ArgumentNullException, но его не было");
+        }
+        catch (ArgumentNullException){}
     }
 }

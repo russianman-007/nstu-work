@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Numerics;
 
 [TestClass]
 public class VectorTests
@@ -25,7 +24,12 @@ public class VectorTests
     [TestMethod]
     public void Constructor_Size_Negative_ThrowsArgumentException()
     {
-        _ = new Vector(-1);
+        try
+        {
+            _ = new Vector(-1);
+            Assert.Fail("Ожидалось исключение ArgumentException, но его не было");
+        }
+        catch (ArgumentException){}
     }
 
     [TestMethod]
@@ -45,7 +49,12 @@ public class VectorTests
     [TestMethod]
     public void Constructor_Array_Null_ThrowsArgumentNullException()
     {
-        _ = new Vector((double[])null);
+        try
+        {
+            _ = new Vector((double[])null);
+            Assert.Fail("Ожидалось исключение ArgumentNullException, но его не было");
+        }
+        catch (ArgumentNullException){}
     }
 
     [TestMethod]
@@ -65,7 +74,12 @@ public class VectorTests
     [TestMethod]
     public void Constructor_Copy_Null_ThrowsArgumentNullException()
     {
-        _ = new Vector((Vector)null);
+        try
+        {
+            _ = new Vector((Vector)null);
+            Assert.Fail("Ожидалось исключение ArgumentNullException, но его не было");
+        }
+        catch (ArgumentNullException){}
     }
 
     [TestMethod]
@@ -91,7 +105,6 @@ public class VectorTests
         var v2 = new Vector(new double[] { 4, 5, 6 });
         var result = v1 + v2;
         var expected = new Vector(new double[] { 5, 7, 9 });
-        // Проверяем вручную, так как Equals не переопределён
         Assert.AreEqual(expected.Length, result.Length);
         for (int i = 0; i < expected.Length; i++)
             Assert.AreEqual(expected[i], result[i]);
@@ -101,7 +114,12 @@ public class VectorTests
     public void OperatorAddition_NullOperand_ThrowsArgumentNullException()
     {
         var v = new Vector(new double[] { 1, 2 });
-        _ = v + null;
+        try
+        {
+            _ = v + null;
+            Assert.Fail("Ожидалось исключение ArgumentNullException, но его не было");
+        }
+        catch (ArgumentNullException){}
     }
 
     [TestMethod]
@@ -109,7 +127,12 @@ public class VectorTests
     {
         var v1 = new Vector(new double[] { 1, 2 });
         var v2 = new Vector(new double[] { 1, 2, 3 });
-        _ = v1 + v2;
+        try
+        {
+            _ = v1 + v2;
+            Assert.Fail("Ожидалось исключение ArgumentException, но его не было");
+        }
+        catch (ArgumentException){}
     }
 
     [TestMethod]
