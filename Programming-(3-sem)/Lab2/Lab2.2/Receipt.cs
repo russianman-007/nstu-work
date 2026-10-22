@@ -19,4 +19,9 @@ public class Receipt : Document
             return Number == other.Number && Amount == other.Amount;
         return false;
     }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Number, Amount);
+    }
 }
