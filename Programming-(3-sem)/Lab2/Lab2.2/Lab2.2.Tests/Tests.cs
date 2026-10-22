@@ -40,7 +40,10 @@ namespace Lab._2._2.Tests
             Assert.IsTrue(actual.Contains("R-001"));
             Assert.IsTrue(actual.Contains("01.12.2025"));
             Assert.IsTrue(actual.Contains("ООО Ромашка"));
-            Assert.IsTrue(actual.Contains("1500,50"));
+
+            string expectedAmount = 1500.50m.ToString("F2");
+            Assert.IsTrue(actual.Contains(expectedAmount),
+                $"Ожидалось содержимое '{expectedAmount}', но фактически: '{actual}'");
         }
 
         [TestMethod]
@@ -91,7 +94,7 @@ namespace Lab._2._2.Tests
             Assert.IsTrue(actual.Contains("Цемент, доски"));
         }
 
-        // ================ Check (sealed) =================
+        // ================= Check ==================
 
         [TestMethod]
         public void Check_ToString_ReturnsCorrectString()
@@ -113,7 +116,7 @@ namespace Lab._2._2.Tests
             Assert.IsTrue(type.IsSealed);
         }
 
-        // ================ Полиморфизм: Document[] =================
+        // ================ Полиморфизм Document[] =================
 
         [TestMethod]
         public void Document_Array_PolymorphicBehavior()
@@ -133,7 +136,7 @@ namespace Lab._2._2.Tests
             Assert.IsTrue(docs[2].ToString().StartsWith("Чек"));
         }
 
-        // ================ Print вызывает ToString =================
+        // =============== Print вызывает ToString =================
 
         [TestMethod]
         public void Document_Print_CallsToString()
