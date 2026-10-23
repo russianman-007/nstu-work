@@ -8,8 +8,8 @@ namespace DungeonCrawler.Core.Models.Entities
         public override string Symbol => "M";
         public override ConsoleColor Color => ConsoleColor.Magenta;
 
-        public MovingEnemy(Position position)
-            : base(position, "Moving Enemy", 20, 10)
+        public MovingEnemy(Position position, int health = 20, int attackPower = 10, int scoreReward = 30)
+            : base(position, "Moving Enemy", health, attackPower, scoreReward)
         {
         }
 
@@ -19,8 +19,7 @@ namespace DungeonCrawler.Core.Models.Entities
             if (cell?.IsPassable == true && !cell.IsOccupied)
             {
                 var oldCell = gameState.Dungeon.GetCell(Position);
-                if (oldCell != null)
-                    oldCell.Entity = null;
+                if (oldCell != null) oldCell.Entity = null;
                 Position = newPosition;
                 cell.Entity = this;
                 return true;
@@ -33,7 +32,6 @@ namespace DungeonCrawler.Core.Models.Entities
             base.Update(gameState);
             if (!IsAlive) return;
 
-            // ИИ: двигаться к герою
             var hero = gameState.Hero;
             if (hero != null)
             {
@@ -41,11 +39,9 @@ namespace DungeonCrawler.Core.Models.Entities
                 var newPosition = Position + direction;
                 TryMove(newPosition, gameState);
 
-                // Если рядом с героем - атаковать
-                // Используем правильный метод AttackHero
                 if (Position.DistanceTo(hero.Position) <= 1.5)
                 {
-                    AttackHero(hero, gameState);   // Теперь этот метод существует
+                    AttackHero(hero, gameState);
                 }
             }
         }

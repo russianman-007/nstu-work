@@ -1,15 +1,15 @@
 ﻿using System;
+using DungeonCrawler.Core.Models;
 
 namespace DungeonCrawler.Core.Models.Entities
 {
-    [Serializable]
     public class StationaryEnemy : Enemy
     {
         public override string Symbol => "S";
         public override ConsoleColor Color => ConsoleColor.Red;
 
-        public StationaryEnemy(Position position)
-            : base(position, "Stationary Enemy", 30, 15)
+        public StationaryEnemy(Position position, int health = 30, int attackPower = 15, int scoreReward = 50)
+            : base(position, "Stationary Enemy", health, attackPower, scoreReward)
         {
         }
     }

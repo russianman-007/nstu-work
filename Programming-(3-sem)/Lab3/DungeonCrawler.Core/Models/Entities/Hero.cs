@@ -1,17 +1,16 @@
-﻿using DungeonCrawler.Core.Interfaces;
+﻿using System;
+using System.Linq;
 using DungeonCrawler.Core.Models;
-using System;
-using System.Xml.Linq;
 
 namespace DungeonCrawler.Core.Models.Entities
 {
-    public class Hero : Entity  // Должно быть Entity, а не IEntity
+    public class Hero : Entity
     {
         public override string Symbol => "@";
         public override ConsoleColor Color => ConsoleColor.Yellow;
         public override bool IsPassable => false;
         public int Health { get; set; } = 100;
-        public int Score { get; set; }
+        public int Score { get; set; } = 0;
         public int AttackPower { get; set; } = 10;
 
         public Hero(Position position) : base(position, "Hero")
@@ -23,28 +22,31 @@ namespace DungeonCrawler.Core.Models.Entities
             if (gameState == null) return false;
             var cell = gameState.Dungeon.GetCell(newPosition);
 
-            // Если на целевой клетке враг - атакуем
             if (cell?.Entity is Enemy enemy && enemy.IsAlive)
             {
                 Attack(enemy);
-                gameState.Log.Add($"{Name} attacks {enemy.Name} for {AttackPower} damage!");
+                gameState.AddLog($"{Name} attacks {enemy.Name} for {AttackPower} damage!");
                 if (!enemy.IsAlive)
                 {
-                    gameState.Log.Add($"{enemy.Name} defeated!");
-                    // После убийства врага можно занять его клетку
+                    gameState.AddLog($"{enemy.Name} defeated!");
                     cell.Entity = null;
-                    return false;  // Не перемещаемся
+                    return false;
                 }
-                return false; // Не перемещаемся при атаке
+                return false;
             }
 
             if (cell?.IsPassable == true)
             {
-                // Освобождаем старую клетку
                 var oldCell = gameState.Dungeon.GetCell(Position);
                 if (oldCell != null)
                     oldCell.Entity = null;
-                // Занимаем новую клетку
+
+                var treasures = gameState.Entities.Where(e => e.Position == newPosition && e is Treasure).Cast<Treasure>().ToList();
+                foreach (var treasure in treasures)
+                {
+                    treasure.Collect(this, gameState);
+                }
+
                 Position = newPosition;
                 cell.Entity = this;
                 return true;
@@ -62,7 +64,6 @@ namespace DungeonCrawler.Core.Models.Entities
 
         public override void Update(GameState gameState)
         {
-            // Герой может восстанавливать здоровье со временем
             if (Health < 100)
             {
                 Health = Math.Min(100, Health + 1);
@@ -80,12 +81,9 @@ namespace DungeonCrawler.Core.Models.Entities
             var parts = data.Split('|');
             if (parts.Length >= 6)
             {
-                if (int.TryParse(parts[3], out int health))
-                    Health = health;
-                if (int.TryParse(parts[4], out int score))
-                    Score = score;
-                if (int.TryParse(parts[5], out int attackPower))
-                    AttackPower = attackPower;
+                if (int.TryParse(parts[3], out int health)) Health = health;
+                if (int.TryParse(parts[4], out int score)) Score = score;
+                if (int.TryParse(parts[5], out int attackPower)) AttackPower = attackPower;
             }
         }
     }
