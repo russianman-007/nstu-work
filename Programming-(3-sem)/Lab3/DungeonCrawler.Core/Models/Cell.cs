@@ -7,7 +7,7 @@ namespace DungeonCrawler.Core.Models
     public class Cell
     {
         public CellType Type { get; set; }
-        public Entity Entity { get; set; }   // Измените IEntity на Entity!
+        public Entity Entity { get; set; }
         public bool IsPassable => Type != CellType.Wall && (Entity == null || Entity.IsPassable);
         public bool IsOccupied => Entity != null;
 

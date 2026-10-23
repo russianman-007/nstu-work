@@ -2,7 +2,7 @@
 
 namespace DungeonCrawler.Core.Models
 {
-    public abstract class Entity   // Ключевое слово abstract class
+    public abstract class Entity
     {
         public abstract string Symbol { get; }
         public abstract ConsoleColor Color { get; }

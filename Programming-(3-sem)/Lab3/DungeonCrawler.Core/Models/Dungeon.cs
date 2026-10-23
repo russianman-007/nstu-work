@@ -26,19 +26,16 @@ namespace DungeonCrawler.Core.Models
             {
                 for (int y = 0; y < Height; y++)
                 {
-                    // Границы - стены
                     if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
                     {
                         Grid[x, y] = new Cell(CellType.Wall);
                     }
                     else
                     {
-                        // Случайные стены внутри
                         Grid[x, y] = new Cell(random.Next(5) == 0 ? CellType.Wall : CellType.Floor);
                     }
                 }
             }
-            // Выход в правом нижнем углу
             Grid[Width - 2, Height - 2] = new Cell(CellType.Exit);
         }
 
@@ -55,8 +52,7 @@ namespace DungeonCrawler.Core.Models
                    position.Y >= 0 && position.Y < Height;
         }
 
-        // ИЗМЕНИТЕ ЭТОТ МЕТОД:
-        public void PlaceEntity(Entity entity)   // Было IEntity entity
+        public void PlaceEntity(Entity entity)
         {
             var cell = GetCell(entity.Position);
             if (cell != null)

@@ -81,7 +81,7 @@ namespace DungeonCrawler.Core.Models
                 emptyPositions.Remove(pos);
             }
 
-            AddLog("Welcome to Dungeon Crawler!");
+            AddLog("Добро пожаловать в ПОДЗЕМЕЛЬЕ!");
         }
 
         public void Update()
@@ -89,7 +89,7 @@ namespace DungeonCrawler.Core.Models
             if (IsGameOver || IsGameWon) return;
             Turn++;
             Log.Clear();
-            AddLog($"Turn {Turn}");
+            AddLog($"Ход {Turn}");
 
             foreach (var entity in Entities.ToList())
             {
@@ -100,8 +100,8 @@ namespace DungeonCrawler.Core.Models
             if (heroCell?.Type == CellType.Exit)
             {
                 IsGameWon = true;
-                AddLog("Congratulations! You found the exit!");
-                AddLog($"Final Score: {Hero.Score}");
+                AddLog("ПОЗДРАВЛЯЕМ! Вы нашли выход!");
+                AddLog($"Итоговый счет: {Hero.Score}");
             }
 
             Entities.RemoveAll(e => e is Enemy enemy && !enemy.IsAlive);

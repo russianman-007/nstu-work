@@ -1,13 +1,13 @@
-﻿using System;
-using DungeonCrawler.Core.Models;
+﻿using DungeonCrawler.Core.Models.Entities;
+using System;
 
-namespace DungeonCrawler.Core.Models.Entities
+namespace DungeonCrawler.Core.Models
 {
     public abstract class Enemy : Entity
     {
         public int Health { get; set; }
         public int AttackPower { get; protected set; }
-        public int ScoreReward { get; protected set; } // Очки опыта за убийство
+        public int ScoreReward { get; protected set; }
         public bool IsAlive => Health > 0;
 
         protected Enemy(Position position, string name, int health, int attackPower, int scoreReward)
@@ -25,10 +25,10 @@ namespace DungeonCrawler.Core.Models.Entities
                 hero.Health -= AttackPower;
                 if (gameState != null)
                 {
-                    gameState.AddLog($"{Name} attacks {hero.Name} for {AttackPower} damage!");
+                    gameState.AddLog($"{Name} атакует {hero.Name} и наносит {AttackPower} урона!");
                     if (hero.Health <= 0)
                     {
-                        gameState.AddLog($"{hero.Name} has been defeated!");
+                        gameState.AddLog($"{hero.Name} повержен!");
                         gameState.IsGameOver = true;
                     }
                 }
