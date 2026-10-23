@@ -9,17 +9,22 @@ namespace DungeonCrawler
         {
             var gameService = new GameService();
             var renderer = new ConsoleRenderer();
+
             Console.Clear();
             Console.WriteLine("=== DUNGEON CRAWLER ===");
             Console.WriteLine("Press any key to start...");
             Console.ReadKey();
+
+            renderer.Render(gameService.CurrentGame);
+
             bool running = true;
             while (running)
             {
-                renderer.Render(gameService.CurrentGame);
                 if (Console.KeyAvailable)
                 {
                     var key = Console.ReadKey(true).Key;
+                    bool needsRender = false;
+
                     switch (key)
                     {
                         case ConsoleKey.Escape:
@@ -28,16 +33,24 @@ namespace DungeonCrawler
                             break;
                         case ConsoleKey.F5:
                             gameService.SaveGame();
+                            needsRender = true;
                             break;
                         case ConsoleKey.F9:
                             gameService.LoadGame();
+                            needsRender = true;
                             break;
                         case ConsoleKey.N:
                             gameService.NewGame();
+                            needsRender = true;
                             break;
                         default:
-                            gameService.ProcessInput(key);
+                            needsRender = gameService.ProcessInput(key);
                             break;
+                    }
+
+                    if (needsRender)
+                    {
+                        renderer.Render(gameService.CurrentGame);
                     }
                 }
                 System.Threading.Thread.Sleep(50);
