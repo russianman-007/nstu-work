@@ -10,7 +10,7 @@ namespace DungeonCrawler.Core.Services
         {
             Console.Clear();
 
-            Console.WriteLine("=== DUNGEON CRAWLER ===");
+            Console.WriteLine("=== ИСКАТЕЛЬ ПОДЗЕМЕЛИЙ ===");
             Console.WriteLine();
 
             var map = gameState.Dungeon.Render();
@@ -37,7 +37,7 @@ namespace DungeonCrawler.Core.Services
             var hero = gameState.Hero;
             if (hero != null)
             {
-                Console.WriteLine("Enemies in attack range:");
+                Console.WriteLine("Враги в радиусе атаки:");
                 bool enemiesNearby = false;
                 var attackPositions = new Position[]
                 {
@@ -51,18 +51,18 @@ namespace DungeonCrawler.Core.Services
                     var cell = gameState.Dungeon.GetCell(pos);
                     if (cell?.Entity is Enemy enemy && enemy.IsAlive)
                     {
-                        Console.WriteLine($"  {enemy.Name} at ({pos.X},{pos.Y}) - Health: {enemy.Health}");
+                        Console.WriteLine($"  {enemy.Name} на клетке ({pos.X},{pos.Y}) - Здоровье: {enemy.Health}");
                         enemiesNearby = true;
                     }
                 }
                 if (!enemiesNearby)
                 {
-                    Console.WriteLine("  No enemies in attack range");
+                    Console.WriteLine("  - Врагов в радиусе атаки нет");
                 }
             }
 
             Console.WriteLine();
-            Console.WriteLine("Legend: @=Hero $=Treasure S=Stationary M=Moving #=Wall E=Exit");
+            Console.WriteLine("Обозначения: @ = Герой; $ = Сокровище; S = Стоячий враг; M = Движущийся враг; # = Стена; E = Выход");
             Console.WriteLine(new string('=', 40));
             Console.WriteLine(GetStatus(gameState));
             Console.WriteLine(new string('-', 40));
@@ -73,16 +73,16 @@ namespace DungeonCrawler.Core.Services
             }
 
             Console.WriteLine(new string('-', 40));
-            Console.WriteLine("Controls: Arrows/WASD=Move | SPACE=Attack | F5=Save | F9=Load | N=New Game | Esc=Exit");
+            Console.WriteLine("Управление: | Стрелки/WASD = Движение | N = Новая игра | F5 = Сохранить игру       |\n            | Пробел = Атака          | Esc = Выход    | F9 = Загрузить сохранение |");
         }
 
         private string GetStatus(GameState gameState)
         {
             if (gameState.IsGameWon)
-                return $"VICTORY! Score: {gameState.Hero?.Score ?? 0}";
+                return $"ПОБЕДА! Очки: {gameState.Hero?.Score ?? 0}";
             if (gameState.IsGameOver)
-                return "GAME OVER";
-            return $"Health: {gameState.Hero?.Health ?? 0} | Score: {gameState.Hero?.Score ?? 0} | Turn: {gameState.Turn}";
+                return "ИГРА ОКОНЧЕНА";
+            return $"Здоровье: {gameState.Hero?.Health ?? 0} | Очки: {gameState.Hero?.Score ?? 0} | Ход: {gameState.Turn}";
         }
     }
 }

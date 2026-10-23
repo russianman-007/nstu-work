@@ -77,7 +77,7 @@ namespace DungeonCrawler.Core.Services
                     if (!enemy.IsAlive)
                     {
                         hero.Score += enemy.ScoreReward;
-                        CurrentGame.AddLog($"{enemy.Name} повержен! +{enemy.ScoreReward} очков (опыта)!");
+                        CurrentGame.AddLog($"{enemy.Name} повержен! +{enemy.ScoreReward} очков!");
                     }
                 }
             }
@@ -92,6 +92,13 @@ namespace DungeonCrawler.Core.Services
         {
             try
             {
+                var heroCell = CurrentGame.Dungeon.GetCell(CurrentGame.Hero.Position);
+                if (CurrentGame.IsGameOver || heroCell?.Type == CellType.Exit)
+                {
+                    CurrentGame.AddLog("В данный момент сохраниться невозможно! Начните новую игру.");
+                    return;
+                }
+
                 var saveData = new SaveData
                 {
                     Width = CurrentGame.Dungeon.Width,
@@ -111,7 +118,6 @@ namespace DungeonCrawler.Core.Services
                     IsGameWon = CurrentGame.IsGameWon
                 };
 
-                // Сохраняем карту (стены, пол, выход)
                 for (int x = 0; x < saveData.Width; x++)
                 {
                     for (int y = 0; y < saveData.Height; y++)
@@ -120,7 +126,6 @@ namespace DungeonCrawler.Core.Services
                     }
                 }
 
-                // Сохраняем все сущности, кроме героя
                 foreach (var ent in CurrentGame.Entities)
                 {
                     if (ent is Hero) continue;
@@ -176,11 +181,8 @@ namespace DungeonCrawler.Core.Services
                     return false;
                 }
 
-                // 1. Создаем новый GameState (он автоматически сгенерирует случайную карту и сущности)
                 var newGame = new GameState(saveData.Width, saveData.Height);
 
-                // 2. КРИТИЧЕСКИ ВАЖНО: Полностью очищаем сетку карты от случайно созданных сущностей!
-                // Предыдущая версия очищала только список Entities, но не сами клетки Grid
                 for (int x = 0; x < newGame.Dungeon.Width; x++)
                 {
                     for (int y = 0; y < newGame.Dungeon.Height; y++)
@@ -189,11 +191,9 @@ namespace DungeonCrawler.Core.Services
                     }
                 }
 
-                // 3. Очищаем списки сущностей и логов от случайной генерации
                 newGame.Entities.Clear();
                 newGame.Log.Clear();
 
-                // 4. Восстанавливаем тип клеток карты (стены, пол, выход) из сохранения
                 foreach (var md in saveData.MapData)
                 {
                     var parts = md.Split(',');
@@ -204,7 +204,6 @@ namespace DungeonCrawler.Core.Services
                     newGame.Dungeon.Grid[x, y].Type = (CellType)int.Parse(parts[2]);
                 }
 
-                // 5. Восстанавливаем героя
                 var hero = new Hero(new Position(saveData.Hero.X, saveData.Hero.Y))
                 {
                     Health = saveData.Hero.Health,
@@ -215,7 +214,6 @@ namespace DungeonCrawler.Core.Services
                 newGame.Entities.Add(hero);
                 newGame.Hero = hero;
 
-                // 6. Восстанавливаем сущности (враги и сокровища)
                 foreach (var entData in saveData.Entities)
                 {
                     Entity ent = null;
@@ -241,14 +239,12 @@ namespace DungeonCrawler.Core.Services
                     }
                 }
 
-                // 7. Восстанавливаем системные флаги
                 newGame.Turn = saveData.Turn;
                 newGame.IsGameOver = saveData.IsGameOver;
                 newGame.IsGameWon = saveData.IsGameWon;
 
-                // 8. Применяем новое состояние
                 CurrentGame = newGame;
-                CurrentGame.AddLog("Игра успешно загружена!");
+                CurrentGame.AddLog("Сохранение успешно загружено!");
                 return true;
             }
             catch (Exception ex)
@@ -261,10 +257,9 @@ namespace DungeonCrawler.Core.Services
         public void NewGame()
         {
             CurrentGame = new GameState();
-            CurrentGame.AddLog("Новая игра начата!");
+            CurrentGame.AddLog("Начало новой игры!");
         }
 
-        // DTO-классы для сериализации
         private class SaveData
         {
             public int Width { get; set; }
