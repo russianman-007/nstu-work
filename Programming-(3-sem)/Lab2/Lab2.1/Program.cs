@@ -49,7 +49,7 @@ class Program
         Console.WriteLine("\n=======================================================\n");
         Console.WriteLine("================= Методы расширения: ==================\n");
         
-        string text = "Мед и Варенье!";
+        string text = "Мет и Варенье!";
         Console.WriteLine($"# Оригинал строки: '{text}'");
         Console.WriteLine($"# Строка после учечки: '{text.CutStart(6)}'");
 
