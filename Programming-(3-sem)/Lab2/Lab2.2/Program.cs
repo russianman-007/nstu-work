@@ -31,7 +31,7 @@ class Program
         }
 
         var r1 = new Receipt("КВ-012", date1, org1, 1500.50m);
-        var r2 = new Receipt("КВ-012", date1, org1, 1500.50m);
-        Console.WriteLine($"Квитанции равны? {r1.Equals(r2)}");
+        var r2 = new Receipt("КВ-112", date3, org2, 2000.00m);
+        Console.WriteLine($"\nКвитанции равны? {r1.Equals(r2)}");
     }
 }
