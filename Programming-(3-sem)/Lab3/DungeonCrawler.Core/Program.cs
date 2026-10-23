@@ -11,8 +11,8 @@ namespace DungeonCrawler
             var renderer = new ConsoleRenderer();
 
             Console.Clear();
-            Console.WriteLine("=== DUNGEON CRAWLER ===");
-            Console.WriteLine("Press any key to start...");
+            Console.WriteLine("=== ИСКАТЕЛЬ ПОДЗЕМЕЛИЙ ===");
+            Console.WriteLine("Нажмите любую кнопку для начала игры...");
             Console.ReadKey();
 
             renderer.Render(gameService.CurrentGame);
@@ -29,7 +29,7 @@ namespace DungeonCrawler
                     {
                         case ConsoleKey.Escape:
                             running = false;
-                            Console.WriteLine("Goodbye!");
+                            Console.WriteLine("До свидания!");
                             break;
                         case ConsoleKey.F5:
                             gameService.SaveGame();
@@ -55,7 +55,7 @@ namespace DungeonCrawler
                 }
                 System.Threading.Thread.Sleep(50);
             }
-            Console.WriteLine("Press any key to exit...");
+            Console.WriteLine("Нажмите любую кнопку для выхода из игры...");
             Console.ReadKey();
         }
     }
