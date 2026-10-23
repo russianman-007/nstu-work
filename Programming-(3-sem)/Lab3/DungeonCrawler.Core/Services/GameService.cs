@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using DungeonCrawler.Core.Models;
 using DungeonCrawler.Core.Models.Entities;
@@ -31,13 +33,12 @@ namespace DungeonCrawler.Core.Services
                 ConsoleKey.S => new Position(0, 1),
                 ConsoleKey.A => new Position(-1, 0),
                 ConsoleKey.D => new Position(1, 0),
-                ConsoleKey.Spacebar => new Position(0, 0),  // Для атаки
+                ConsoleKey.Spacebar => new Position(0, 0),
                 _ => new Position(0, 0)
             };
 
             if (direction.X != 0 || direction.Y != 0)
             {
-                // Движение героя
                 var newPosition = CurrentGame.Hero.Position + direction;
                 CurrentGame.Hero.TryMove(newPosition, CurrentGame);
                 CurrentGame.Update();
@@ -45,7 +46,6 @@ namespace DungeonCrawler.Core.Services
             }
             else if (key == ConsoleKey.Spacebar)
             {
-                // Атака героя
                 PerformAttack();
                 CurrentGame.Update();
                 return true;
@@ -53,20 +53,18 @@ namespace DungeonCrawler.Core.Services
             return false;
         }
 
-        // Выполнение атаки героем
         private void PerformAttack()
         {
             var hero = CurrentGame.Hero;
             if (hero == null) return;
 
             bool attacked = false;
-            // Проверяем 4 соседние клетки
             var positionsToCheck = new Position[]
             {
-                new Position(hero.Position.X + 1, hero.Position.Y),  // Вправо
-                new Position(hero.Position.X - 1, hero.Position.Y),  // Влево
-                new Position(hero.Position.X, hero.Position.Y + 1),  // Вниз
-                new Position(hero.Position.X, hero.Position.Y - 1)   // Вверх
+                new Position(hero.Position.X + 1, hero.Position.Y),
+                new Position(hero.Position.X - 1, hero.Position.Y),
+                new Position(hero.Position.X, hero.Position.Y + 1),
+                new Position(hero.Position.X, hero.Position.Y - 1)
             };
 
             foreach (var pos in positionsToCheck)
@@ -75,18 +73,19 @@ namespace DungeonCrawler.Core.Services
                 if (cell?.Entity is Enemy enemy && enemy.IsAlive)
                 {
                     hero.Attack(enemy);
-                    CurrentGame.Log.Add($"{hero.Name} attacks {enemy.Name} for {hero.AttackPower} damage!");
+                    CurrentGame.AddLog($"{hero.Name} attacks {enemy.Name} for {hero.AttackPower} damage!");
                     attacked = true;
                     if (!enemy.IsAlive)
                     {
-                        CurrentGame.Log.Add($"{enemy.Name} defeated!");
+                        hero.Score += enemy.ScoreReward;
+                        CurrentGame.AddLog($"{enemy.Name} defeated! +{enemy.ScoreReward} очков (опыта)!");
                     }
                 }
             }
 
             if (!attacked)
             {
-                CurrentGame.Log.Add("No enemies in attack range!");
+                CurrentGame.AddLog("No enemies in attack range!");
             }
         }
 
@@ -96,21 +95,66 @@ namespace DungeonCrawler.Core.Services
             {
                 var saveData = new SaveData
                 {
-                    HeroX = CurrentGame.Hero.Position.X,
-                    HeroY = CurrentGame.Hero.Position.Y,
-                    HeroHealth = CurrentGame.Hero.Health,
-                    HeroScore = CurrentGame.Hero.Score,
+                    Width = CurrentGame.Dungeon.Width,
+                    Height = CurrentGame.Dungeon.Height,
+                    MapData = new List<string>(),
+                    Hero = new SaveHeroData
+                    {
+                        X = CurrentGame.Hero.Position.X,
+                        Y = CurrentGame.Hero.Position.Y,
+                        Health = CurrentGame.Hero.Health,
+                        Score = CurrentGame.Hero.Score,
+                        AttackPower = CurrentGame.Hero.AttackPower
+                    },
+                    Entities = new List<SaveEntityData>(),
                     Turn = CurrentGame.Turn,
                     IsGameOver = CurrentGame.IsGameOver,
                     IsGameWon = CurrentGame.IsGameWon
                 };
+
+                // Сохраняем карту (стены, пол, выход)
+                for (int x = 0; x < saveData.Width; x++)
+                {
+                    for (int y = 0; y < saveData.Height; y++)
+                    {
+                        saveData.MapData.Add($"{x},{y},{(int)CurrentGame.Dungeon.Grid[x, y].Type}");
+                    }
+                }
+
+                // Сохраняем все сущности, кроме героя
+                foreach (var ent in CurrentGame.Entities)
+                {
+                    if (ent is Hero) continue;
+
+                    var savedEnt = new SaveEntityData
+                    {
+                        Type = ent.GetType().Name,
+                        X = ent.Position.X,
+                        Y = ent.Position.Y
+                    };
+
+                    if (ent is Enemy enemy)
+                    {
+                        savedEnt.Health = enemy.Health;
+                        savedEnt.AttackPower = enemy.AttackPower;
+                        savedEnt.ScoreReward = enemy.ScoreReward;
+                    }
+                    else if (ent is Treasure treasure)
+                    {
+                        savedEnt.Value = treasure.Value;
+                        savedEnt.ScoreReward = treasure.ScoreReward;
+                    }
+
+                    saveData.Entities.Add(savedEnt);
+                }
+
                 var json = JsonSerializer.Serialize(saveData, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(SaveFileName, json);
-                CurrentGame.Log.Add("Game saved successfully!");
+                CurrentGame.AddLog("Game saved successfully!");
             }
             catch (Exception ex)
             {
-                CurrentGame.Log.Add($"Save failed: {ex.Message}");
+                CurrentGame.AddLog($"Save failed: {ex.Message}");
             }
         }
 
@@ -120,7 +164,7 @@ namespace DungeonCrawler.Core.Services
             {
                 if (!File.Exists(SaveFileName))
                 {
-                    CurrentGame.Log.Add("No save file found!");
+                    CurrentGame.AddLog("No save file found!");
                     return false;
                 }
 
@@ -129,49 +173,75 @@ namespace DungeonCrawler.Core.Services
 
                 if (saveData == null)
                 {
-                    CurrentGame.Log.Add("Save file is corrupted!");
+                    CurrentGame.AddLog("Save file is corrupted!");
                     return false;
                 }
 
-                // Создаем новую игру с загруженными параметрами
-                var newGame = new GameState();
+                // Создаём GameState с нужными размерами (он сгенерирует случайную карту, которую мы перезапишем)
+                var newGame = new GameState(saveData.Width, saveData.Height);
 
-                // Перемещаем героя на сохраненную позицию
-                var newPosition = new Position(saveData.HeroX, saveData.HeroY);
-                var targetCell = newGame.Dungeon.GetCell(newPosition);
+                // Очищаем случайную генерацию — будем восстанавливать сохранённое состояние
+                newGame.Entities.Clear();
+                newGame.Log.Clear();
 
-                if (targetCell?.IsPassable == true)
+                // Восстанавливаем карту (стены, пол, выход)
+                foreach (var md in saveData.MapData)
                 {
-                    // Освобождаем старую позицию
-                    var oldCell = newGame.Dungeon.GetCell(newGame.Hero.Position);
-                    if (oldCell != null) oldCell.Entity = null;
-
-                    // Занимаем новую позицию
-                    newGame.Hero.Position = newPosition;
-                    targetCell.Entity = newGame.Hero;
-
-                    // Восстанавливаем параметры героя
-                    newGame.Hero.Health = Math.Min(100, Math.Max(0, saveData.HeroHealth));
-                    newGame.Hero.Score = Math.Max(0, saveData.HeroScore);
-
-                    // Восстанавливаем состояние игры
-                    newGame.Turn = Math.Max(0, saveData.Turn);
-                    newGame.IsGameOver = saveData.IsGameOver;
-                    newGame.IsGameWon = saveData.IsGameWon;
-
-                    CurrentGame = newGame;
-                    CurrentGame.Log.Add("Game loaded successfully!");
-                    return true;
+                    var parts = md.Split(',');
+                    if (parts.Length != 3) continue;
+                    int x = int.Parse(parts[0]);
+                    int y = int.Parse(parts[1]);
+                    newGame.Dungeon.Grid[x, y].Type = (CellType)int.Parse(parts[2]);
                 }
-                else
+
+                // Восстанавливаем героя
+                var hero = new Hero(new Position(saveData.Hero.X, saveData.Hero.Y))
                 {
-                    CurrentGame.Log.Add("Cannot load - saved position is blocked!");
-                    return false;
+                    Health = saveData.Hero.Health,
+                    Score = saveData.Hero.Score,
+                    AttackPower = saveData.Hero.AttackPower
+                };
+                newGame.Dungeon.PlaceEntity(hero);
+                newGame.Entities.Add(hero);
+                newGame.Hero = hero;
+
+                // Восстанавливаем сущности (враги и сокровища)
+                foreach (var entData in saveData.Entities)
+                {
+                    Entity ent = null;
+                    var pos = new Position(entData.X, entData.Y);
+
+                    if (entData.Type == "Treasure")
+                    {
+                        ent = new Treasure(pos, entData.Value, entData.ScoreReward);
+                    }
+                    else if (entData.Type == "MovingEnemy")
+                    {
+                        ent = new MovingEnemy(pos, entData.Health, entData.AttackPower, entData.ScoreReward);
+                    }
+                    else if (entData.Type == "StationaryEnemy")
+                    {
+                        ent = new StationaryEnemy(pos, entData.Health, entData.AttackPower, entData.ScoreReward);
+                    }
+
+                    if (ent != null)
+                    {
+                        newGame.Dungeon.PlaceEntity(ent);
+                        newGame.Entities.Add(ent);
+                    }
                 }
+
+                newGame.Turn = saveData.Turn;
+                newGame.IsGameOver = saveData.IsGameOver;
+                newGame.IsGameWon = saveData.IsGameWon;
+
+                CurrentGame = newGame;
+                CurrentGame.AddLog("Game loaded successfully!");
+                return true;
             }
             catch (Exception ex)
             {
-                CurrentGame.Log.Add($"Load failed: {ex.Message}");
+                CurrentGame.AddLog($"Load failed: {ex.Message}");
                 return false;
             }
         }
@@ -179,18 +249,40 @@ namespace DungeonCrawler.Core.Services
         public void NewGame()
         {
             CurrentGame = new GameState();
-            CurrentGame.Log.Add("New game started!");
+            CurrentGame.AddLog("New game started!");
         }
 
+        // DTO-классы для сериализации
         private class SaveData
         {
-            public int HeroX { get; set; }
-            public int HeroY { get; set; }
-            public int HeroHealth { get; set; }
-            public int HeroScore { get; set; }
+            public int Width { get; set; }
+            public int Height { get; set; }
+            public List<string> MapData { get; set; }
+            public SaveHeroData Hero { get; set; }
+            public List<SaveEntityData> Entities { get; set; }
             public int Turn { get; set; }
             public bool IsGameOver { get; set; }
             public bool IsGameWon { get; set; }
+        }
+
+        private class SaveHeroData
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Health { get; set; }
+            public int Score { get; set; }
+            public int AttackPower { get; set; }
+        }
+
+        private class SaveEntityData
+        {
+            public string Type { get; set; }
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Health { get; set; }
+            public int AttackPower { get; set; }
+            public int Value { get; set; }
+            public int ScoreReward { get; set; }
         }
     }
 }

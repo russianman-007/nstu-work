@@ -1,5 +1,6 @@
-﻿using System;
-using DungeonCrawler.Core.Models;
+﻿using DungeonCrawler.Core.Models;
+using DungeonCrawler.Core.Models.Entities;
+using System;
 
 namespace DungeonCrawler.Core.Services
 {
@@ -8,9 +9,10 @@ namespace DungeonCrawler.Core.Services
         public void Render(GameState gameState)
         {
             Console.Clear();
-            // Рендерим карту
+
             Console.WriteLine("=== DUNGEON CRAWLER ===");
             Console.WriteLine();
+
             var map = gameState.Dungeon.Render();
             var lines = map.Split('\n');
             for (int y = 0; y < lines.Length && y < gameState.Dungeon.Height; y++)
@@ -31,11 +33,11 @@ namespace DungeonCrawler.Core.Services
                 }
                 Console.WriteLine();
             }
-            // Показываем врагов в радиусе атаки
+
             var hero = gameState.Hero;
             if (hero != null)
             {
-                System.Console.WriteLine("Enemies in attack range:");
+                Console.WriteLine("Enemies in attack range:");
                 bool enemiesNearby = false;
                 var attackPositions = new Position[]
                 {
@@ -49,28 +51,29 @@ namespace DungeonCrawler.Core.Services
                     var cell = gameState.Dungeon.GetCell(pos);
                     if (cell?.Entity is Enemy enemy && enemy.IsAlive)
                     {
-                        System.Console.WriteLine($"  {enemy.Name} at ({pos.X},{pos.Y}) - Health: {enemy.Health}");
+                        Console.WriteLine($"  {enemy.Name} at ({pos.X},{pos.Y}) - Health: {enemy.Health}");
                         enemiesNearby = true;
                     }
                 }
                 if (!enemiesNearby)
                 {
-                    System.Console.WriteLine("  No enemies in attack range");
+                    Console.WriteLine("  No enemies in attack range");
                 }
             }
-            // Рендерим статус
-            System.Console.WriteLine();
-            System.Console.WriteLine("Legend: @=Hero $=Treasure S=Stationary M=Moving #=Wall E=Exit");
-            System.Console.WriteLine(new string('=', 40));
-            System.Console.WriteLine(GetStatus(gameState));
-            System.Console.WriteLine(new string('-', 40));
-            // Рендерим лог
+
+            Console.WriteLine();
+            Console.WriteLine("Legend: @=Hero $=Treasure S=Stationary M=Moving #=Wall E=Exit");
+            Console.WriteLine(new string('=', 40));
+            Console.WriteLine(GetStatus(gameState));
+            Console.WriteLine(new string('-', 40));
+
             foreach (var message in gameState.Log)
             {
                 Console.WriteLine(message);
             }
-            System.Console.WriteLine(new string('-', 40));
-            System.Console.WriteLine("Controls: Arrows/WASD=Move | SPACE=Attack | F5=Save | F9=Load | N=New Game | Esc=Exit");
+
+            Console.WriteLine(new string('-', 40));
+            Console.WriteLine("Controls: Arrows/WASD=Move | SPACE=Attack | F5=Save | F9=Load | N=New Game | Esc=Exit");
         }
 
         private string GetStatus(GameState gameState)
