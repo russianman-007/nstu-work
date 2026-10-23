@@ -1,5 +1,4 @@
-﻿// IEntity.cs
-using DungeonCrawler.Core.Models;
+﻿using DungeonCrawler.Core.Models;
 using System;
 
 namespace DungeonCrawler.Core.Interfaces
