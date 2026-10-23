@@ -9,7 +9,7 @@ namespace DungeonCrawler.Core.Models.Entities
         public override ConsoleColor Color => ConsoleColor.Magenta;
 
         public MovingEnemy(Position position, int health = 20, int attackPower = 10, int scoreReward = 30)
-            : base(position, "Moving Enemy", health, attackPower, scoreReward)
+            : base(position, "Движущийся враг", health, attackPower, scoreReward)
         {
         }
 
@@ -39,7 +39,7 @@ namespace DungeonCrawler.Core.Models.Entities
                 var newPosition = Position + direction;
                 TryMove(newPosition, gameState);
 
-                if (Position.DistanceTo(hero.Position) <= 1.5)
+                if (Position.DistanceTo(hero.Position) <= 1.0)
                 {
                     AttackHero(hero, gameState);
                 }

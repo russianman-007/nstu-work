@@ -13,7 +13,7 @@ namespace DungeonCrawler.Core.Models.Entities
         public int Score { get; set; } = 0;
         public int AttackPower { get; set; } = 10;
 
-        public Hero(Position position) : base(position, "Hero")
+        public Hero(Position position) : base(position, "Герой")
         {
         }
 
@@ -25,10 +25,10 @@ namespace DungeonCrawler.Core.Models.Entities
             if (cell?.Entity is Enemy enemy && enemy.IsAlive)
             {
                 Attack(enemy);
-                gameState.AddLog($"{Name} attacks {enemy.Name} for {AttackPower} damage!");
+                gameState.AddLog($"{Name} атакует {enemy.Name} и наносит {AttackPower} урона!");
                 if (!enemy.IsAlive)
                 {
-                    gameState.AddLog($"{enemy.Name} defeated!");
+                    gameState.AddLog($"{enemy.Name} повержен!");
                     cell.Entity = null;
                     return false;
                 }

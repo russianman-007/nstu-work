@@ -9,9 +9,9 @@ namespace DungeonCrawler.Core.Models.Entities
         public override ConsoleColor Color => ConsoleColor.Green;
         public override bool IsPassable => true;
         public int Value { get; private set; }
-        public int ScoreReward { get; private set; } // Бонусные очки опыта за сбор
+        public int ScoreReward { get; private set; }
 
-        public Treasure(Position position, int value = 50, int scoreReward = 25) : base(position, $"Treasure({value})")
+        public Treasure(Position position, int value = 50, int scoreReward = 25) : base(position, $"Сокровище({value})")
         {
             Value = value;
             ScoreReward = scoreReward;
@@ -21,8 +21,8 @@ namespace DungeonCrawler.Core.Models.Entities
         {
             if (hero != null && gameState != null)
             {
-                hero.Score += Value + ScoreReward; // Суммируем стоимость и бонус опыта
-                gameState.AddLog($"{hero.Name} found treasure! +{Value + ScoreReward} очков (опыта)!");
+                hero.Score += Value + ScoreReward;
+                gameState.AddLog($"{hero.Name} нашел сокровище! +{Value + ScoreReward} очков!");
 
                 var cell = gameState.Dungeon.GetCell(Position);
                 if (cell != null)
