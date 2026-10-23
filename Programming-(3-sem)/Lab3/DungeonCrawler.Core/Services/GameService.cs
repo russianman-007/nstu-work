@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using DungeonCrawler.Core.Models;
 using DungeonCrawler.Core.Models.Entities;
@@ -73,19 +72,19 @@ namespace DungeonCrawler.Core.Services
                 if (cell?.Entity is Enemy enemy && enemy.IsAlive)
                 {
                     hero.Attack(enemy);
-                    CurrentGame.AddLog($"{hero.Name} attacks {enemy.Name} for {hero.AttackPower} damage!");
+                    CurrentGame.AddLog($"{hero.Name} атакует {enemy.Name} и наносит {hero.AttackPower} урона!");
                     attacked = true;
                     if (!enemy.IsAlive)
                     {
                         hero.Score += enemy.ScoreReward;
-                        CurrentGame.AddLog($"{enemy.Name} defeated! +{enemy.ScoreReward} очков (опыта)!");
+                        CurrentGame.AddLog($"{enemy.Name} повержен! +{enemy.ScoreReward} очков (опыта)!");
                     }
                 }
             }
 
             if (!attacked)
             {
-                CurrentGame.AddLog("No enemies in attack range!");
+                CurrentGame.AddLog("В радиусе атаки нет врагов!");
             }
         }
 
@@ -150,11 +149,11 @@ namespace DungeonCrawler.Core.Services
 
                 var json = JsonSerializer.Serialize(saveData, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(SaveFileName, json);
-                CurrentGame.AddLog("Game saved successfully!");
+                CurrentGame.AddLog("Игра успешно сохранена!");
             }
             catch (Exception ex)
             {
-                CurrentGame.AddLog($"Save failed: {ex.Message}");
+                CurrentGame.AddLog($"Ошибка сохранения: {ex.Message}");
             }
         }
 
@@ -164,7 +163,7 @@ namespace DungeonCrawler.Core.Services
             {
                 if (!File.Exists(SaveFileName))
                 {
-                    CurrentGame.AddLog("No save file found!");
+                    CurrentGame.AddLog("Файл сохранения не найден!");
                     return false;
                 }
 
@@ -173,28 +172,39 @@ namespace DungeonCrawler.Core.Services
 
                 if (saveData == null)
                 {
-                    CurrentGame.AddLog("Save file is corrupted!");
+                    CurrentGame.AddLog("Файл сохранения поврежден!");
                     return false;
                 }
 
-                // Создаём GameState с нужными размерами (он сгенерирует случайную карту, которую мы перезапишем)
+                // 1. Создаем новый GameState (он автоматически сгенерирует случайную карту и сущности)
                 var newGame = new GameState(saveData.Width, saveData.Height);
 
-                // Очищаем случайную генерацию — будем восстанавливать сохранённое состояние
+                // 2. КРИТИЧЕСКИ ВАЖНО: Полностью очищаем сетку карты от случайно созданных сущностей!
+                // Предыдущая версия очищала только список Entities, но не сами клетки Grid
+                for (int x = 0; x < newGame.Dungeon.Width; x++)
+                {
+                    for (int y = 0; y < newGame.Dungeon.Height; y++)
+                    {
+                        newGame.Dungeon.Grid[x, y].Entity = null;
+                    }
+                }
+
+                // 3. Очищаем списки сущностей и логов от случайной генерации
                 newGame.Entities.Clear();
                 newGame.Log.Clear();
 
-                // Восстанавливаем карту (стены, пол, выход)
+                // 4. Восстанавливаем тип клеток карты (стены, пол, выход) из сохранения
                 foreach (var md in saveData.MapData)
                 {
                     var parts = md.Split(',');
                     if (parts.Length != 3) continue;
+
                     int x = int.Parse(parts[0]);
                     int y = int.Parse(parts[1]);
                     newGame.Dungeon.Grid[x, y].Type = (CellType)int.Parse(parts[2]);
                 }
 
-                // Восстанавливаем героя
+                // 5. Восстанавливаем героя
                 var hero = new Hero(new Position(saveData.Hero.X, saveData.Hero.Y))
                 {
                     Health = saveData.Hero.Health,
@@ -205,7 +215,7 @@ namespace DungeonCrawler.Core.Services
                 newGame.Entities.Add(hero);
                 newGame.Hero = hero;
 
-                // Восстанавливаем сущности (враги и сокровища)
+                // 6. Восстанавливаем сущности (враги и сокровища)
                 foreach (var entData in saveData.Entities)
                 {
                     Entity ent = null;
@@ -231,17 +241,19 @@ namespace DungeonCrawler.Core.Services
                     }
                 }
 
+                // 7. Восстанавливаем системные флаги
                 newGame.Turn = saveData.Turn;
                 newGame.IsGameOver = saveData.IsGameOver;
                 newGame.IsGameWon = saveData.IsGameWon;
 
+                // 8. Применяем новое состояние
                 CurrentGame = newGame;
-                CurrentGame.AddLog("Game loaded successfully!");
+                CurrentGame.AddLog("Игра успешно загружена!");
                 return true;
             }
             catch (Exception ex)
             {
-                CurrentGame.AddLog($"Load failed: {ex.Message}");
+                CurrentGame.AddLog($"Ошибка загрузки: {ex.Message}");
                 return false;
             }
         }
@@ -249,7 +261,7 @@ namespace DungeonCrawler.Core.Services
         public void NewGame()
         {
             CurrentGame = new GameState();
-            CurrentGame.AddLog("New game started!");
+            CurrentGame.AddLog("Новая игра начата!");
         }
 
         // DTO-классы для сериализации
