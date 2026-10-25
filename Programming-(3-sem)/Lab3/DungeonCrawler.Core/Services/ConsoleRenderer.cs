@@ -1,4 +1,5 @@
-﻿using DungeonCrawler.Core.Models;
+﻿// Отвечает за вывод игрового состояния в консоль
+using DungeonCrawler.Core.Models;
 using DungeonCrawler.Core.Models.Entities;
 using System;
 
@@ -6,6 +7,7 @@ namespace DungeonCrawler.Core.Services
 {
     public class ConsoleRenderer
     {
+        // Полная отрисовка игрового состояния в консоли
         public void Render(GameState gameState)
         {
             Console.Clear();
@@ -76,6 +78,7 @@ namespace DungeonCrawler.Core.Services
             Console.WriteLine("Управление: | Стрелки/WASD = Движение | N = Новая игра | F5 = Сохранить игру       |\n            | Пробел = Атака          | Esc = Выход    | F9 = Загрузить сохранение |");
         }
 
+        // Формирование строки статуса
         private string GetStatus(GameState gameState)
         {
             if (gameState.IsGameWon)

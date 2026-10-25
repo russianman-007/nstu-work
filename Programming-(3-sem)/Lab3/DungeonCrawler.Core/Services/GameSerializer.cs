@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Утилитарный класс для записи и чтения объектов в формате JSON
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -15,6 +16,7 @@ namespace DungeonCrawler.Core.Services
             Converters = { new JsonStringEnumConverter() }
         };
 
+        // Запись объекта в файл
         public static void SerializeToFile(string filePath, object obj)
         {
             try
@@ -28,6 +30,7 @@ namespace DungeonCrawler.Core.Services
             }
         }
 
+        // Чтение и десериализация объекта из файла
         public static T DeserializeFromFile<T>(string filePath) where T : class
         {
             try

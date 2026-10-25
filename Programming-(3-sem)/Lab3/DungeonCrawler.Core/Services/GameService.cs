@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Управляет игровой логикой: ввод, сохранение, загрузка и боевая система
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -17,6 +18,7 @@ namespace DungeonCrawler.Core.Services
             CurrentGame = new GameState();
         }
 
+        // Обработка ввода пользователя (движение, атака)
         public bool ProcessInput(ConsoleKey key)
         {
             if (CurrentGame.IsGameOver || CurrentGame.IsGameWon)
@@ -52,6 +54,7 @@ namespace DungeonCrawler.Core.Services
             return false;
         }
 
+        // Выполнение атаки героем по 4 соседним клеткам
         private void PerformAttack()
         {
             var hero = CurrentGame.Hero;
@@ -88,6 +91,7 @@ namespace DungeonCrawler.Core.Services
             }
         }
 
+        // Сохранение игры. Блокируется, если герой погиб или стоит на выходе
         public void SaveGame()
         {
             try
@@ -162,6 +166,7 @@ namespace DungeonCrawler.Core.Services
             }
         }
 
+        // Полная загрузка карты, сущностей и статов из файла сохранения
         public bool LoadGame()
         {
             try
@@ -254,6 +259,7 @@ namespace DungeonCrawler.Core.Services
             }
         }
 
+        // Сброс и создание нового экземпляра GameState
         public void NewGame()
         {
             CurrentGame = new GameState();
