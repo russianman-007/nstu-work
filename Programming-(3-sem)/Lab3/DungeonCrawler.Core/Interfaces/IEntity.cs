@@ -1,4 +1,5 @@
-﻿using DungeonCrawler.Core.Models;
+﻿// Интерфейсы для игровых сущностей, движения и взаимодействия
+using DungeonCrawler.Core.Models;
 using System;
 
 namespace DungeonCrawler.Core.Interfaces
