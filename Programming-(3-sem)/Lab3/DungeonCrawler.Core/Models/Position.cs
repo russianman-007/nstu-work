@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Структура для хранения и вычисления координат на карте
+using System;
 
 namespace DungeonCrawler.Core.Models
 {
@@ -21,6 +22,7 @@ namespace DungeonCrawler.Core.Models
         public static Position operator +(Position a, Position b) => new(a.X + b.X, a.Y + b.Y);
         public static Position operator -(Position a, Position b) => new(a.X - b.X, a.Y - b.Y);
 
+        // Вычисление евклидова расстояния до другой позиции
         public double DistanceTo(Position other)
         {
             int dx = X - other.X;
@@ -28,6 +30,7 @@ namespace DungeonCrawler.Core.Models
             return Math.Sqrt(dx * dx + dy * dy);
         }
 
+        // Определение направления к цели
         public Position GetDirectionTo(Position target)
         {
             int dx = Math.Sign(target.X - X);

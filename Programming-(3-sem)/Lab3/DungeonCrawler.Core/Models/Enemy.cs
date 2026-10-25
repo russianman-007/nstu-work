@@ -1,4 +1,5 @@
-﻿using DungeonCrawler.Core.Models.Entities;
+﻿// Абстрактный класс для всех типов врагов
+using DungeonCrawler.Core.Models.Entities;
 using System;
 
 namespace DungeonCrawler.Core.Models
@@ -18,6 +19,7 @@ namespace DungeonCrawler.Core.Models
             ScoreReward = scoreReward;
         }
 
+        // Нанесение урона герою
         public virtual void AttackHero(Hero hero, GameState gameState)
         {
             if (hero != null)
@@ -35,6 +37,7 @@ namespace DungeonCrawler.Core.Models
             }
         }
 
+        // Удаление мертвого врага с карты
         public override void Update(GameState gameState)
         {
             if (!IsAlive)

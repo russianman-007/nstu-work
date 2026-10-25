@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Хранит полное состояние игры: поле, сущности, лог и флаги завершения
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DungeonCrawler.Core.Models.Entities;
@@ -26,6 +27,7 @@ namespace DungeonCrawler.Core.Models
             InitializeGame();
         }
 
+        // Добавление сообщения в лог, предотвращая спам и ограничивая размер
         public void AddLog(string message)
         {
             if (Log.Count > 0 && Log[Log.Count - 1] == message)
@@ -39,6 +41,7 @@ namespace DungeonCrawler.Core.Models
             }
         }
 
+        // Первичное размещение героя, сокровищ и врагов на свободных клетках
         private void InitializeGame()
         {
             var emptyPositions = Dungeon.GetEmptyPositions();
@@ -84,6 +87,7 @@ namespace DungeonCrawler.Core.Models
             AddLog("Добро пожаловать в ПОДЗЕМЕЛЬЕ!");
         }
 
+        // Инкремент хода, обновление всех сущностей, проверка условия победы
         public void Update()
         {
             if (IsGameOver || IsGameWon) return;
@@ -107,6 +111,7 @@ namespace DungeonCrawler.Core.Models
             Entities.RemoveAll(e => e is Enemy enemy && !enemy.IsAlive);
         }
 
+        // Безопасное удаление сущности из списка и с карты
         public void RemoveEntity(Entity entity)
         {
             Entities.Remove(entity);

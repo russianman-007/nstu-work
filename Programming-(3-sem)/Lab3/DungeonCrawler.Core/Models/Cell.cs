@@ -1,4 +1,5 @@
-﻿using DungeonCrawler.Core.Interfaces;
+﻿// Представляет одну клетку игрового поля
+using DungeonCrawler.Core.Interfaces;
 using Microsoft.VisualBasic;
 using System;
 
@@ -17,6 +18,7 @@ namespace DungeonCrawler.Core.Models
             Entity = null;
         }
 
+        // Символьное представление клетки для рендера
         public override string ToString()
         {
             return Entity?.Symbol ?? (Type == CellType.Wall ? "#" : Type == CellType.Exit ? "E" : ".");

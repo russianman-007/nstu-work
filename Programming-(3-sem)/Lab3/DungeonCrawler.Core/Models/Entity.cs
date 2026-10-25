@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Абстрактный базовый класс для всех объектов на карте
+using System;
 
 namespace DungeonCrawler.Core.Models
 {
@@ -16,13 +17,16 @@ namespace DungeonCrawler.Core.Models
             Name = name;
         }
 
+        // Обновление состояния сущности
         public virtual void Update(GameState gameState) { }
 
+        // Сериализация в строку
         public virtual string Serialize()
         {
             return $"{GetType().Name}|{Position.X},{Position.Y}|{Name}";
         }
 
+        // Десериализация из строки
         public virtual void Deserialize(string data)
         {
             var parts = data.Split('|');

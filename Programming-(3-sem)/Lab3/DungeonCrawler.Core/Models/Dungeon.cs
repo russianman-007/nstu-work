@@ -1,4 +1,5 @@
-﻿using DungeonCrawler.Core.Interfaces;
+﻿// Управляет генерацией и хранением структуры игрового поля
+using DungeonCrawler.Core.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -19,6 +20,7 @@ namespace DungeonCrawler.Core.Models
             Initialize();
         }
 
+        // Инициализация поля: генерация границ-стен и выхода
         private void Initialize()
         {
             var random = new Random();
@@ -39,6 +41,7 @@ namespace DungeonCrawler.Core.Models
             Grid[Width - 2, Height - 2] = new Cell(CellType.Exit);
         }
 
+        // Получение ссылки на клетку по координатам
         public Cell GetCell(Position position)
         {
             if (IsValidPosition(position))
@@ -46,12 +49,14 @@ namespace DungeonCrawler.Core.Models
             return null;
         }
 
+        // Проверка выхода координат за границы массива
         public bool IsValidPosition(Position position)
         {
             return position.X >= 0 && position.X < Width &&
                    position.Y >= 0 && position.Y < Height;
         }
 
+        // Размещение объекта на карте
         public void PlaceEntity(Entity entity)
         {
             var cell = GetCell(entity.Position);
@@ -61,6 +66,7 @@ namespace DungeonCrawler.Core.Models
             }
         }
 
+        // Удаление объекта с карты
         public void RemoveEntity(Position position)
         {
             var cell = GetCell(position);
@@ -70,6 +76,7 @@ namespace DungeonCrawler.Core.Models
             }
         }
 
+        // Текстовое представление карты для консоли
         public string Render()
         {
             var sb = new StringBuilder();
@@ -84,6 +91,7 @@ namespace DungeonCrawler.Core.Models
             return sb.ToString();
         }
 
+        // Получение списка всех свободных проходимых клеток
         public List<Position> GetEmptyPositions()
         {
             var positions = new List<Position>();
