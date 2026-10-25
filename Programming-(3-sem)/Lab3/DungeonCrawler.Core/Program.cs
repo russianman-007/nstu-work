@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Точка входа в приложение. Управляет главным циклом игры
+using System;
 using DungeonCrawler.Core.Services;
 
 namespace DungeonCrawler
