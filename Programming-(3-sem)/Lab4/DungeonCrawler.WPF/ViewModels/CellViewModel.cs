@@ -1,4 +1,5 @@
-﻿using DungeonCrawler.Core.Models;
+﻿// ViewModel для представления одной клетки игрового поля в интерфейсе
+using DungeonCrawler.Core.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
@@ -12,6 +13,7 @@ namespace DungeonCrawler.WPF.ViewModels
         private string _content = "";
         private Brush _foregroundColor = Brushes.Black;
 
+        // Предопределенные кисти для темной темы
         private static readonly Brush DarkFloor = (Brush)new BrushConverter().ConvertFromString("#2D2D2D");
         private static readonly Brush DarkWall = (Brush)new BrushConverter().ConvertFromString("#3E3E3E");
         private static readonly Brush DarkExit = (Brush)new BrushConverter().ConvertFromString("#1A4D4D");
@@ -50,6 +52,7 @@ namespace DungeonCrawler.WPF.ViewModels
             }
         }
 
+        // Инициализация ViewModel клетки с заданными координатами и моделью
         public CellViewModel(int x, int y, Cell cell)
         {
             X = x;
@@ -58,6 +61,7 @@ namespace DungeonCrawler.WPF.ViewModels
             UpdateVisuals();
         }
 
+        // Обновление визуального представления клетки (символ и цвета)
         public void UpdateVisuals()
         {
             if (_cell.Entity != null)
@@ -89,6 +93,7 @@ namespace DungeonCrawler.WPF.ViewModels
             }
         }
 
+        // Преобразование ConsoleColor в соответствующую WPF Brush
         private Brush GetBrushFromColor(ConsoleColor color)
         {
             return color switch
@@ -105,6 +110,7 @@ namespace DungeonCrawler.WPF.ViewModels
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        // Вызов события изменения свойства
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

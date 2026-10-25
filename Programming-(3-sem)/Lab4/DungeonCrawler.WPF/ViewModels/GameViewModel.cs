@@ -1,4 +1,5 @@
-﻿using DungeonCrawler.Core.Models;
+﻿// Главная ViewModel, управляющая состоянием игры и командами интерфейса
+using DungeonCrawler.Core.Models;
 using DungeonCrawler.Core.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -56,6 +57,7 @@ namespace DungeonCrawler.WPF.ViewModels
         public ICommand SaveGameCommand { get; }
         public ICommand LoadGameCommand { get; }
 
+        // Инициализация сервиса игры и привязка команд
         public GameViewModel()
         {
             _gameService = new GameService();
@@ -75,6 +77,7 @@ namespace DungeonCrawler.WPF.ViewModels
             LoadGameCommand = new RelayCommand(_ => LoadGame());
         }
 
+        // Создание ViewModel для всех клеток игрового поля
         private void InitializeGrid()
         {
             Cells.Clear();
@@ -88,6 +91,7 @@ namespace DungeonCrawler.WPF.ViewModels
             }
         }
 
+        // Обновление отображения поля, статуса и журнала событий
         private void UpdateDisplay()
         {
             var game = _gameService.CurrentGame;
@@ -146,6 +150,7 @@ namespace DungeonCrawler.WPF.ViewModels
             }
         }
 
+        // Обработка перемещения героя в заданном направлении
         private void Move(int dx, int dy)
         {
             if (_gameService.CurrentGame.IsGameOver || _gameService.CurrentGame.IsGameWon)
@@ -164,6 +169,7 @@ namespace DungeonCrawler.WPF.ViewModels
             UpdateDisplay();
         }
 
+        // Обработка атаки героя
         private void Attack()
         {
             if (_gameService.CurrentGame.IsGameOver || _gameService.CurrentGame.IsGameWon)
@@ -173,6 +179,7 @@ namespace DungeonCrawler.WPF.ViewModels
             UpdateDisplay();
         }
 
+        // Сброс и создание новой игры
         private void NewGame()
         {
             _gameService.NewGame();
@@ -182,12 +189,14 @@ namespace DungeonCrawler.WPF.ViewModels
             UpdateDisplay();
         }
 
+        // Сохранение текущего состояния игры
         private void SaveGame()
         {
             _gameService.SaveGame();
             UpdateDisplay();
         }
 
+        // Загрузка ранее сохраненного состояния игры
         private void LoadGame()
         {
             _gameService.LoadGame();
@@ -199,6 +208,7 @@ namespace DungeonCrawler.WPF.ViewModels
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        // Вызов события изменения свойства
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿// Обработчик событий главного окна, перенаправляющий нажатия клавиш в команды ViewModel
+using System.Windows;
 using System.Windows.Input;
 using DungeonCrawler.WPF.ViewModels;
 
@@ -11,6 +12,7 @@ namespace DungeonCrawler.WPF
             InitializeComponent();
         }
 
+        // Перехват нажатий клавиш для управления игрой с клавиатуры
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (DataContext is not GameViewModel vm) return;
