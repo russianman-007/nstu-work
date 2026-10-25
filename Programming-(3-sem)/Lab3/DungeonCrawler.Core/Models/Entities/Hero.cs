@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Управляемый игроком персонаж
+using System;
 using System.Linq;
 using DungeonCrawler.Core.Models;
 
@@ -17,6 +18,7 @@ namespace DungeonCrawler.Core.Models.Entities
         {
         }
 
+        // Попытка перемещения или атаки при движении
         public bool TryMove(Position newPosition, GameState gameState)
         {
             if (gameState == null) return false;
@@ -54,6 +56,7 @@ namespace DungeonCrawler.Core.Models.Entities
             return false;
         }
 
+        // Нанесение урона указанному врагу
         public void Attack(Enemy enemy)
         {
             if (enemy != null)
@@ -62,6 +65,7 @@ namespace DungeonCrawler.Core.Models.Entities
             }
         }
 
+        // Восстановление 1 ед. здоровья за ход
         public override void Update(GameState gameState)
         {
             if (Health < 100)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Враг, который перемещается в сторону героя и атакует его
+using System;
 using DungeonCrawler.Core.Models;
 
 namespace DungeonCrawler.Core.Models.Entities
@@ -13,6 +14,7 @@ namespace DungeonCrawler.Core.Models.Entities
         {
         }
 
+        // Попытка перемещения на новую свободную клетку
         public bool TryMove(Position newPosition, GameState gameState)
         {
             var cell = gameState.Dungeon.GetCell(newPosition);
@@ -27,6 +29,7 @@ namespace DungeonCrawler.Core.Models.Entities
             return false;
         }
 
+        // Движение к герою и атака при сближении
         public override void Update(GameState gameState)
         {
             base.Update(gameState);

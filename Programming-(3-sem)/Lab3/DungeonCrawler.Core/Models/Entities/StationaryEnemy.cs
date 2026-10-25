@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Враг, который не двигается, но атакует героя на близкой дистанции
+using System;
 using DungeonCrawler.Core.Models;
 
 namespace DungeonCrawler.Core.Models.Entities
@@ -13,6 +14,7 @@ namespace DungeonCrawler.Core.Models.Entities
         {
         }
 
+        // Атака героя, если расстояние <= 1.0
         public override void Update(GameState gameState)
         {
             base.Update(gameState);

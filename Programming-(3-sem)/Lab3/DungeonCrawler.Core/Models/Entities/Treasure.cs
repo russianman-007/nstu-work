@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Подбираемый предмет, увеличивающий счет игрока
+using System;
 using DungeonCrawler.Core.Models;
 
 namespace DungeonCrawler.Core.Models.Entities
@@ -17,6 +18,7 @@ namespace DungeonCrawler.Core.Models.Entities
             ScoreReward = scoreReward;
         }
 
+        // Взаимодействие с героем: начисление очков и удаление с карты
         public void Collect(Hero hero, GameState gameState)
         {
             if (hero != null && gameState != null)
