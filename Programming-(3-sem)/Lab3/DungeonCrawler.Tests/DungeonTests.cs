@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿// Проверка корректности генерации игрового поля
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DungeonCrawler.Core.Models;
 
 namespace DungeonCrawler.Tests
@@ -6,6 +7,7 @@ namespace DungeonCrawler.Tests
     [TestClass]
     public class DungeonTests
     {
+        // Проверка создания сетки заданного размера
         [TestMethod]
         public void Dungeon_Initialization_CreatesValidGrid()
         {
@@ -16,6 +18,7 @@ namespace DungeonCrawler.Tests
             Assert.IsNotNull(dungeon.Grid);
         }
 
+        // Проверка, что границы поля всегда являются стенами
         [TestMethod]
         public void Dungeon_Boundaries_AreWalls()
         {
@@ -27,6 +30,7 @@ namespace DungeonCrawler.Tests
             Assert.AreEqual(CellType.Wall, dungeon.Grid[2, 4].Type);
         }
 
+        // Проверка, что выход размещается в правом нижнем углу
         [TestMethod]
         public void Dungeon_Exit_IsPlacedCorrectly()
         {

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿// Проверка корректности реализации боевой системы
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DungeonCrawler.Core.Models;
 using DungeonCrawler.Core.Models.Entities;
 
@@ -7,6 +8,7 @@ namespace DungeonCrawler.Tests
     [TestClass]
     public class CombatTests
     {
+        // Проверка, что атака героя уменьшает здоровье врага
         [TestMethod]
         public void Hero_Attack_ReducesEnemyHealth()
         {
@@ -19,6 +21,7 @@ namespace DungeonCrawler.Tests
             Assert.IsTrue(enemy.IsAlive, "Враг должен остаться жив после одного удара");
         }
 
+        // Проверка, что атака врага уменьшает здоровье героя
         [TestMethod]
         public void Enemy_Attack_ReducesHeroHealth()
         {
@@ -31,6 +34,7 @@ namespace DungeonCrawler.Tests
             Assert.AreEqual(75, hero.Health, "Здоровье героя должно уменьшиться на силу атаки врага");
         }
 
+        // Проверка начисления очков при смерти врага
         [TestMethod]
         public void Enemy_Death_TriggersScoreReward()
         {

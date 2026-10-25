@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿// Проверка создания игрового состояния и защиты от спама в логе
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DungeonCrawler.Core.Models;
 
 namespace DungeonCrawler.Tests
@@ -6,6 +7,7 @@ namespace DungeonCrawler.Tests
     [TestClass]
     public class GameStateTests
     {
+        // Проверка корректного создания игрового состояния с размещением сущностей
         [TestMethod]
         public void GameState_Initialization_CreatesEntities()
         {
@@ -17,6 +19,7 @@ namespace DungeonCrawler.Tests
             Assert.IsFalse(game.IsGameOver, "Игра не должна быть окончена при старте");
         }
 
+        // Проверка защиты от дублирования сообщений в журнале событий
         [TestMethod]
         public void GameState_AddLog_PreventsSpam()
         {
@@ -31,6 +34,7 @@ namespace DungeonCrawler.Tests
             Assert.AreEqual("Test message", game.Log[0]);
         }
 
+        // Проверка ограничения размера лога
         [TestMethod]
         public void GameState_AddLog_LimitsSize()
         {

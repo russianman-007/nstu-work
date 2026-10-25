@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿// Проверка корректности реализации структуры Position
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DungeonCrawler.Core.Models;
 using System;
 
@@ -7,6 +8,7 @@ namespace DungeonCrawler.Tests
     [TestClass]
     public class PositionTests
     {
+        // Тест операторов равенства
         [TestMethod]
         public void Position_Equality_Works()
         {
@@ -18,6 +20,7 @@ namespace DungeonCrawler.Tests
             Assert.IsFalse(pos1 == pos3, "Разные позиции не должны быть равны");
         }
 
+        // Тест вычисления расстояния
         [TestMethod]
         public void Position_Distance_CalculatedCorrectly()
         {
@@ -29,6 +32,7 @@ namespace DungeonCrawler.Tests
             Assert.AreEqual(5.0, distance, 0.0001, "Расстояние вычислено неверно");
         }
 
+        // Тест сложения позиций
         [TestMethod]
         public void Position_Addition_Works()
         {
