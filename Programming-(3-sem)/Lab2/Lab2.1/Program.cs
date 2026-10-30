@@ -24,18 +24,18 @@ class Program
         var v6 = v1 + v2;
         Console.WriteLine($"# {v1} + {v2} = {v6} - Сложение векторов");
 
-        double norm1 = v3.Norm();
-        double norm2 = v4.Norm();
+        double norm1 = v1.Norm();
+        double norm2 = v2.Norm();
         if (norm1 > norm2)
-        { Console.Write($"# {v3} > {v4}"); }
+        { Console.Write($"# {v1} > {v2}"); }
         else if (norm1 < norm2)
-        { Console.Write($"# {v3} < {v4}"); }
+        { Console.Write($"# {v1} < {v2}"); }
         else
-        { Console.Write($"# {v3} = {v4}"); }
+        { Console.Write($"# {v1} = {v2}"); }
         Console.WriteLine(" - Сравнение векторов");
 
-        var v7 = new Vector(v1);
-        Console.WriteLine($"# {v7} ~ {v1} - Копирование вектора\n");
+        var v7 = new Vector(v2);
+        Console.WriteLine($"# {v7} ~ {v2} - Копирование вектора\n");
 
         if (v4)
         { Console.WriteLine($"# Вектор V4 не пустой"); }
@@ -49,7 +49,7 @@ class Program
         Console.WriteLine("\n=======================================================\n");
         Console.WriteLine("================= Методы расширения: ==================\n");
         
-        string text = "Мед и Варенье!";
+        string text = "Мет и Варенье!";
         Console.WriteLine($"# Оригинал строки: '{text}'");
         Console.WriteLine($"# Строка после учечки: '{text.CutStart(6)}'");
 
