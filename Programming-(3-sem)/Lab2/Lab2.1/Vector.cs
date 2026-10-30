@@ -32,6 +32,7 @@ public class Vector
         _data = new double[other._data.Length];
         Array.Copy(other._data, _data, other._data.Length);
     }
+
     // Индексатор
     public double this[int index]
     {
@@ -59,16 +60,41 @@ public class Vector
         return new Vector(result);
     }
 
-    // Оператор сравнения
+    // Оператор сравнения векторов (>)
+    public static bool operator >(Vector v1, Vector v2)
+    {
+        if (v1 is null || v2 is null)
+            throw new ArgumentNullException("Вектор не может быть null");
+        return v1.Norm() > v2.Norm();
+    }
+
+    // Оператор сравнения векторов (<)
+    public static bool operator <(Vector v1, Vector v2)
+    {
+        if (v1 is null || v2 is null)
+            throw new ArgumentNullException("Вектор не может быть null");
+        return v1.Norm() < v2.Norm();
+    }
+
+    // Вычисление евклидовой нормы для сравнения векторов
     public double Norm()
     {
         return Math.Sqrt(_data.Sum(x => x * x));
+    }
+
+    // Оператор копирования вектора (~)
+    public static Vector operator ~(Vector v)
+    {
+        if (v is null)
+            throw new ArgumentNullException("Вектор не может быть null");
+        return new Vector(v);
     }
 
     // Определение пустоты вектора
     public static bool operator true(Vector v) => v is not null && v.Length > 0;
     public static bool operator false(Vector v) => v is null || v.Length == 0;
 
+    // Строковое представление вектора
     public override string ToString()
     {
         return $"[{string.Join(", ", _data)}]";
