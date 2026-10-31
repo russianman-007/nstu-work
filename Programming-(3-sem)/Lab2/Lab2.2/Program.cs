@@ -17,7 +17,7 @@ class Program
             new Receipt("КВ-012", date1, org1, 1500.50m),
             new Invoice("НК-212", date1, org1, "Мониторы, клавиатуры"),
             new Check("ЧК-427", date2, org1, "Банковская Карта"),
-
+            
             new Receipt("КВ-112", date3, org2, 2000.00m),
             new Invoice("НК-087", date3, org2, "Цемент, арматура, доски"),
             new Check("ЧК-481", date4, org2, "Наличные")
@@ -30,8 +30,20 @@ class Program
             Console.WriteLine(new string('-', 50));
         }
 
+        Console.WriteLine("\n=== Демонстрация специфичных методов классов ===\n");
+
+        var receipt = (Receipt)documents[3];
+        Console.WriteLine($"Квитанция {receipt.Number} дорогая (>10000)? {receipt.IsExpensive()}");
+
+        var invoice = (Invoice)documents[4];
+        Console.WriteLine($"В накладной {invoice.Number} позиций: {invoice.GetItemsCount()}");
+
+        var check = (Check)documents[5];
+        Console.WriteLine($"Чек {check.Number} оплачен наличными? {check.IsCashPayment()}");
+
+        Console.WriteLine("\n=== Проверка переопределения метода 'Equals' ===\n");
         var r1 = new Receipt("КВ-012", date1, org1, 1500.50m);
         var r2 = new Receipt("КВ-112", date3, org2, 2000.00m);
-        Console.WriteLine($"\nКвитанции равны? {r1.Equals(r2)}");
+        Console.WriteLine($"Квитанции равны? {r1.Equals(r2)}");
     }
 }
