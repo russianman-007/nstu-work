@@ -15,7 +15,7 @@ public abstract class Document
 
     public virtual void Print()
     {
-        Console.WriteLine($"[Базовый документ] Номер: {Number}, Дата: {IssueDate}");
+        Console.WriteLine($"Базовый документ №{Number}, Дата: {IssueDate}");
     }
 
     public abstract override string ToString();
