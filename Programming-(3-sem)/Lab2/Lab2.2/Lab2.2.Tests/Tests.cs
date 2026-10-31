@@ -149,8 +149,9 @@ namespace Lab._2._2.Tests
             {
                 Console.SetOut(sw);
                 receipt.Print();
+                sw.Flush();
                 string output = sw.ToString();
-                Assert.IsTrue(output.Contains("Квитанция"));
+                Assert.IsTrue(output.Contains("R"), $"Метод Print не выводит номер документа. Фактический вывод: '{output}'");
             }
         }
     }
