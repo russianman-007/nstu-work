@@ -23,7 +23,7 @@ public class Receipt : Document
 
     public bool IsExpensive()
     {
-        return Amount > 10000m;
+        return Amount > 2200m;
     }
 
     public override bool Equals(object? obj)

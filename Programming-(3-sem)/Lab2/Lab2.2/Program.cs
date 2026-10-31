@@ -33,7 +33,7 @@ class Program
         Console.WriteLine("\n=== Демонстрация специфичных методов классов ===\n");
 
         var receipt = (Receipt)documents[3];
-        Console.WriteLine($"Квитанция {receipt.Number} дорогая (>10000)? {receipt.IsExpensive()}");
+        Console.WriteLine($"Квитанция {receipt.Number} дороже, чем 2200 руб.? {receipt.IsExpensive()}");
 
         var invoice = (Invoice)documents[4];
         Console.WriteLine($"В накладной {invoice.Number} позиций: {invoice.GetItemsCount()}");
