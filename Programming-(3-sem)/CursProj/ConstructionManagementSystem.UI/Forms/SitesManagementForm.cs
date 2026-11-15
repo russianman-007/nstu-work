@@ -316,7 +316,7 @@ namespace ConstructionManagementSystem.Forms
             // Название
             var lblName = new Label
             {
-                Text = "Название:",
+                Text = "* Название:",
                 Location = new Point(10, yPos),
                 Size = new Size(100, 20)
             };
@@ -330,7 +330,7 @@ namespace ConstructionManagementSystem.Forms
             // ✅ ПОЛЕ УЛИЦЫ
             var lblStreet = new Label
             {
-                Text = "Улица:",
+                Text = "* Улица:",
                 Location = new Point(10, yPos),
                 Size = new Size(100, 20)
             };
@@ -344,7 +344,7 @@ namespace ConstructionManagementSystem.Forms
             // Управление
             var lblDepartment = new Label
             {
-                Text = "Управление:",
+                Text = "* Управление:",
                 Location = new Point(10, yPos),
                 Size = new Size(100, 20)
             };

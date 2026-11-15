@@ -435,11 +435,11 @@ namespace ConstructionManagementSystem.Forms
 
             int yPos = START_Y;
 
-            Controls.Add(new Label { Text = "ФИО:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
+            Controls.Add(new Label { Text = "* ФИО:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             Controls.Add(txtFullName = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH });
             yPos += ROW_HEIGHT;
 
-            Controls.Add(new Label { Text = "Должность:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
+            Controls.Add(new Label { Text = "* Должность:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             Controls.Add(cmbPosition = new ComboBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, DropDownStyle = ComboBoxStyle.DropDownList });
             yPos += ROW_HEIGHT;
 
@@ -449,7 +449,7 @@ namespace ConstructionManagementSystem.Forms
             foreach (var spec in specialties) cmbPosition.Items.Add(GetWorkerSpecialtyInRussian(spec));
 
             // ✅ МАСКА ТЕЛЕФОНА: +7 (XXX) XXX-XX-XX
-            Controls.Add(new Label { Text = "Телефон:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
+            Controls.Add(new Label { Text = "* Телефон:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             Controls.Add(txtPhone = new MaskedTextBox
             {
                 Location = new Point(FIELD_X, yPos),
@@ -496,13 +496,57 @@ namespace ConstructionManagementSystem.Forms
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtFullName.Text) || cmbPosition.SelectedIndex < 0)
+            bool nameEmpty = string.IsNullOrWhiteSpace(txtFullName.Text);
+            bool positionEmpty = cmbPosition.SelectedIndex < 0;
+            bool phoneEmpty = !txtPhone.MaskCompleted;
+
+            // Общее сообщение выводится только когда не заполнено ни одно обязательное поле
+            if (nameEmpty && positionEmpty && phoneEmpty)
             {
                 MessageBox.Show("Заполните обязательные поля!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            // ✅ ПРОВЕРКА: Телефон обязателен для сотрудников
+            // Если заполнено частично, указываем конкретное незаполненное поле
+            if (nameEmpty)
+            {
+                MessageBox.Show("Введите ФИО сотрудника!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtFullName.Focus();
+                return;
+            }
+
+            // Проверка ФИО: минимум два слова, в каждом минимум два символа.
+            // Разделителем слов служит пробел, поэтому при двух словах требуется минимум один пробел
+            string[] nameParts = txtFullName.Text.Trim()
+                .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (nameParts.Length < 2)
+            {
+                MessageBox.Show("ФИО должно содержать минимум 2 слова, разделённых пробелом (например: Иванов Иван)!",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtFullName.Focus();
+                return;
+            }
+
+            foreach (string part in nameParts)
+            {
+                if (part.Length < 2)
+                {
+                    MessageBox.Show("Каждое слово в ФИО должно содержать минимум 2 символа!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtFullName.Focus();
+                    return;
+                }
+            }
+
+            if (positionEmpty)
+            {
+                MessageBox.Show("Выберите должность!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                cmbPosition.Focus();
+                return;
+            }
+
+            // Проверка: телефон обязателен
             if (string.IsNullOrWhiteSpace(txtPhone.Text) || txtPhone.MaskCompleted == false)
             {
                 MessageBox.Show("Введите корректный номер телефона в формате: +7 (XXX) XXX-XX-XX", "Ошибка",
@@ -511,7 +555,7 @@ namespace ConstructionManagementSystem.Forms
                 return;
             }
 
-            // ✅ ПРОВЕРКА: Email (если заполнен)
+            // Проверка: Email (если заполнен)
             if (!string.IsNullOrWhiteSpace(txtEmail.Text))
             {
                 if (!txtEmail.Text.Contains("@"))
@@ -521,10 +565,8 @@ namespace ConstructionManagementSystem.Forms
                     txtEmail.Focus();
                     return;
                 }
-
                 int atIndex = txtEmail.Text.IndexOf("@");
                 string domainPart = txtEmail.Text.Substring(atIndex + 1);
-
                 if (domainPart.Length < 4)
                 {
                     MessageBox.Show("После символа '@' должно быть не менее 4 символов!", "Ошибка",
@@ -535,10 +577,8 @@ namespace ConstructionManagementSystem.Forms
             }
 
             int? siteId = null;
-
             var position = GetPositionFromRussian(cmbPosition.SelectedItem.ToString());
             var specialty = GetWorkerSpecialtyFromRussian(cmbPosition.SelectedItem.ToString());
-
             if (specialty.HasValue)
             {
                 if (editingWorker == null)
@@ -548,8 +588,6 @@ namespace ConstructionManagementSystem.Forms
                         FullName = txtFullName.Text.Trim(),
                         Specialty = specialty.Value,
                         SiteId = siteId,
-                        Phone = txtPhone.Text.Trim(),
-                        Email = txtEmail.Text.Trim(),
                         HireDate = int.TryParse(txtExperience.Text, out int exp) ? DateTime.Now.AddYears(-exp) : (DateTime?)null
                     });
                 }
@@ -558,8 +596,6 @@ namespace ConstructionManagementSystem.Forms
                     editingWorker.FullName = txtFullName.Text.Trim();
                     editingWorker.Specialty = specialty.Value;
                     editingWorker.SiteId = siteId;
-                    editingWorker.Phone = txtPhone.Text.Trim();
-                    editingWorker.Email = txtEmail.Text.Trim();
                     editingWorker.HireDate = int.TryParse(txtExperience.Text, out int exp) ? DateTime.Now.AddYears(-exp) : (DateTime?)null;
                     repository.UpdateWorker(editingWorker);
                 }
@@ -594,7 +630,6 @@ namespace ConstructionManagementSystem.Forms
                 MessageBox.Show("Неизвестная должность!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
             MessageBox.Show("Запись успешно сохранена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             DialogResult = DialogResult.OK; Close();
         }

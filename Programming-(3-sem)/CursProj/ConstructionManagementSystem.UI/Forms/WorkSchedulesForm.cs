@@ -1,9 +1,10 @@
-﻿using System;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Linq;
+﻿using ConstructionManagementSystem.Models;
 using ConstructionManagementSystem.Repositories;
-using ConstructionManagementSystem.Models;
+using System;
+using System.Drawing;
+using System.Globalization;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace ConstructionManagementSystem.Forms
 {
@@ -453,14 +454,14 @@ namespace ConstructionManagementSystem.Forms
 
             int yPos = START_Y;
 
-            var lblObject = new Label { Text = "Объект:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
+            var lblObject = new Label { Text = "* Объект:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
             cmbObject = new ComboBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, DropDownStyle = ComboBoxStyle.DropDownList };
             cmbObject.DataSource = repository.GetObjects();
             cmbObject.DisplayMember = "Name"; cmbObject.ValueMember = "Id";
             Controls.Add(lblObject); Controls.Add(cmbObject);
             yPos += ROW_HEIGHT;
 
-            var lblWorkType = new Label { Text = "Вид работ:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
+            var lblWorkType = new Label { Text = "* Вид работ:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
             cmbWorkType = new ComboBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, DropDownStyle = ComboBoxStyle.DropDownList };
             cmbWorkType.Items.Add("Фундамент");
             cmbWorkType.Items.Add("Кладка");
@@ -472,7 +473,7 @@ namespace ConstructionManagementSystem.Forms
             Controls.Add(lblWorkType); Controls.Add(cmbWorkType);
             yPos += ROW_HEIGHT;
 
-            var lblBrigade = new Label { Text = "Бригада:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
+            var lblBrigade = new Label { Text = "* Бригада:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
             cmbBrigade = new ComboBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, DropDownStyle = ComboBoxStyle.DropDownList };
             cmbBrigade.DataSource = repository.GetBrigades();
             cmbBrigade.DisplayMember = "Name"; cmbBrigade.ValueMember = "Id";
@@ -549,9 +550,36 @@ namespace ConstructionManagementSystem.Forms
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            if (cmbObject.SelectedValue == null || cmbBrigade.SelectedValue == null || cmbWorkType.SelectedItem == null)
+            bool objectEmpty = cmbObject.SelectedValue == null;
+            bool workTypeEmpty = cmbWorkType.SelectedItem == null;
+            bool brigadeEmpty = cmbBrigade.SelectedValue == null;
+
+            // Общее сообщение выводится только когда не заполнено ни одно обязательное поле
+            if (objectEmpty && workTypeEmpty && brigadeEmpty)
             {
                 MessageBox.Show("Заполните все обязательные поля!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Если заполнено частично, указываем конкретное незаполненное поле
+            if (objectEmpty)
+            {
+                MessageBox.Show("Выберите объект!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                cmbObject.Focus();
+                return;
+            }
+
+            if (workTypeEmpty)
+            {
+                MessageBox.Show("Выберите вид работ!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                cmbWorkType.Focus();
+                return;
+            }
+
+            if (brigadeEmpty)
+            {
+                MessageBox.Show("Выберите бригаду!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                cmbBrigade.Focus();
                 return;
             }
 
@@ -564,10 +592,8 @@ namespace ConstructionManagementSystem.Forms
             schedule.PlannedEndDate = dtpPlannedEnd.Value;
             schedule.ActualStartDate = chkActualStart.Checked ? dtpActualStart.Value : (DateTime?)null;
             schedule.ActualEndDate = chkActualEnd.Checked ? dtpActualEnd.Value : (DateTime?)null;
-
             if (editingSchedule == null) repository.AddWorkSchedule(schedule);
             else repository.UpdateWorkSchedule(editingSchedule);
-
             MessageBox.Show("График работ успешно сохранен!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             DialogResult = DialogResult.OK; Close();
         }
@@ -697,12 +723,15 @@ namespace ConstructionManagementSystem.Forms
 
         private void LoadReports()
         {
+            // Явно задаётся русская культура, чтобы выводился символ рубля
+            var ruCulture = new CultureInfo("ru-RU");
+
             var reports = repository.GetWorkReports().Where(r => r.WorkScheduleId == scheduleId).Select(r => new
             {
                 r.Id,
                 ReportDate = r.ReportDate.ToString("dd.MM.yyyy"),
                 Completed = $"{r.CompletedPercentage}%",
-                AdditionalCosts = r.AdditionalCosts.HasValue ? $"{r.AdditionalCosts:C}" : "-",
+                AdditionalCosts = r.AdditionalCosts.HasValue ? r.AdditionalCosts.Value.ToString("C", ruCulture) : "-",
                 Description = r.Description ?? "-",
                 Issues = r.Issues ?? "-"
             }).ToList();
@@ -799,19 +828,22 @@ namespace ConstructionManagementSystem.Forms
             Controls.Add(nudCompleted);
             yPos += ROW_HEIGHT;
 
-            // Доп. расходы
+            // Доп. расходы: ввод только цифр, оформление с символом рубля при уходе из поля
             Controls.Add(new Label { Text = "Доп. расходы:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             txtAdditionalCosts = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH };
+            txtAdditionalCosts.KeyPress += TxtAdditionalCosts_KeyPress;
+            txtAdditionalCosts.Enter += TxtAdditionalCosts_Enter;
+            txtAdditionalCosts.Leave += TxtAdditionalCosts_Leave;
             Controls.Add(txtAdditionalCosts);
             yPos += ROW_HEIGHT;
 
-            // ✅ Описание (ОБЯЗАТЕЛЬНОЕ, минимум 3 символа)
-            Controls.Add(new Label { Text = "Описание:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
+            // Описание (обязательное, минимум 3 символа)
+            Controls.Add(new Label { Text = "* Описание:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             txtDescription = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, Multiline = true, Height = 40 };
             Controls.Add(txtDescription);
             yPos += 50;
 
-            // Проблемы (НЕ обязательное)
+            // Проблемы (необязательное)
             Controls.Add(new Label { Text = "Проблемы:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             txtIssues = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, Multiline = true, Height = 40 };
             Controls.Add(txtIssues);
@@ -834,9 +866,68 @@ namespace ConstructionManagementSystem.Forms
             txtIssues.Text = editingReport.Issues ?? "";
         }
 
+        // Ограничение ввода: цифры, Backspace и один разделитель копеек
+        private void TxtAdditionalCosts_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Управляющие символы (Backspace, Delete, Ctrl+V и т.п.) не блокируются
+            if (char.IsControl(e.KeyChar))
+                return;
+
+            if (char.IsDigit(e.KeyChar))
+                return;
+
+            // Разделитель разрешён только один раз
+            if ((e.KeyChar == ',' || e.KeyChar == '.')
+                && !txtAdditionalCosts.Text.Contains(",")
+                && !txtAdditionalCosts.Text.Contains("."))
+                return;
+
+            // Все прочие символы (буквы, знаки, пробелы) не вводятся
+            e.Handled = true;
+        }
+
+        // При получении фокуса убираем символ рубля, чтобы значение можно было редактировать
+        private void TxtAdditionalCosts_Enter(object sender, EventArgs e)
+        {
+            txtAdditionalCosts.Text = txtAdditionalCosts.Text.Replace("₽", "").Trim();
+            txtAdditionalCosts.SelectionStart = txtAdditionalCosts.Text.Length;
+        }
+
+        // При потере фокуса проверяем значение и оформляем с символом рубля (по образцу TxtBudget_Leave)
+        private void TxtAdditionalCosts_Leave(object sender, EventArgs e)
+        {
+            string costsText = txtAdditionalCosts.Text.Replace("₽", "").Replace(" ", "").Trim();
+
+            // Поле необязательное: пустое значение оставляем пустым
+            if (string.IsNullOrWhiteSpace(costsText))
+            {
+                txtAdditionalCosts.Text = "";
+                return;
+            }
+
+            if (!decimal.TryParse(costsText.Replace(',', '.'), NumberStyles.Number,
+                CultureInfo.InvariantCulture, out decimal value))
+            {
+                MessageBox.Show("Поле \"Доп. расходы\" должно содержать только число (например: 1500 или 1500,50)!",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtAdditionalCosts.Focus();
+                return;
+            }
+
+            if (value < 0)
+            {
+                MessageBox.Show("Дополнительные расходы не могут быть отрицательными!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtAdditionalCosts.Focus();
+                return;
+            }
+
+            txtAdditionalCosts.Text = value.ToString("F2") + " ₽";
+        }
+
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            // ✅ ВАЛИДАЦИЯ: Описание обязательно, минимум 3 символа
+            // Проверка описания: обязательное поле, минимум 3 символа
             string description = txtDescription.Text.Trim();
             if (string.IsNullOrWhiteSpace(description) || description.Length < 3)
             {
@@ -846,9 +937,28 @@ namespace ConstructionManagementSystem.Forms
                 return;
             }
 
+            // Проверка дополнительных расходов: если поле заполнено, оно должно быть числом
             decimal? additionalCosts = null;
-            if (!string.IsNullOrWhiteSpace(txtAdditionalCosts.Text) && decimal.TryParse(txtAdditionalCosts.Text, out decimal cost))
+            if (!string.IsNullOrWhiteSpace(txtAdditionalCosts.Text))
             {
+                string costsText = txtAdditionalCosts.Text.Replace("₽", "").Replace(" ", "").Trim().Replace(',', '.');
+
+                if (!decimal.TryParse(costsText, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal cost))
+                {
+                    MessageBox.Show("Поле \"Доп. расходы\" должно содержать только число (например: 1500 или 1500,50)!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtAdditionalCosts.Focus();
+                    return;
+                }
+
+                if (cost < 0)
+                {
+                    MessageBox.Show("Дополнительные расходы не могут быть отрицательными!", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtAdditionalCosts.Focus();
+                    return;
+                }
+
                 additionalCosts = cost;
             }
 
@@ -856,7 +966,7 @@ namespace ConstructionManagementSystem.Forms
             report.WorkScheduleId = scheduleId;
             report.ReportDate = dtpReportDate.Value;
             report.CompletedPercentage = (int)nudCompleted.Value;
-            report.Description = description;  // ✅ Уже обрезано и проверено
+            report.Description = description;
             report.AdditionalCosts = additionalCosts;
             report.Issues = string.IsNullOrWhiteSpace(txtIssues.Text) ? null : txtIssues.Text.Trim();
             report.ReportedBy = 0;

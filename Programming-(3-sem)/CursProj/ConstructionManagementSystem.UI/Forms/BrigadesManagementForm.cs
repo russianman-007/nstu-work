@@ -274,10 +274,10 @@ namespace ConstructionManagementSystem.Forms
             this.MinimizeBox = false;
 
             int yPos = 20;
-            Controls.Add(new Label { Text = "Название:", Location = new Point(10, yPos), Size = new Size(100, 20) });
+            Controls.Add(new Label { Text = "* Название:", Location = new Point(10, yPos), Size = new Size(100, 20) });
             Controls.Add(txtName = new TextBox { Location = new Point(120, yPos), Width = 280 }); yPos += 35;
 
-            Controls.Add(new Label { Text = "Бригадир:", Location = new Point(10, yPos), Size = new Size(100, 20) });
+            Controls.Add(new Label { Text = "* Бригадир:", Location = new Point(10, yPos), Size = new Size(100, 20) });
             Controls.Add(cmbLeader = new ComboBox { Location = new Point(120, yPos), Width = 280, DropDownStyle = ComboBoxStyle.DropDownList }); yPos += 35;
             var leaders = repository.GetEmployees().Where(e =>
                 e.Position == Position.Foreman ||
@@ -322,13 +322,42 @@ namespace ConstructionManagementSystem.Forms
             else cmbWorkType.SelectedIndex = -1;
         }
 
-        private void BtnSave_Click(object sender, EventArgs e)
+                private void BtnSave_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtName.Text) || cmbLeader.SelectedValue == null)
+            bool nameEmpty = string.IsNullOrWhiteSpace(txtName.Text);
+            bool leaderEmpty = cmbLeader.SelectedValue == null;
+
+            // Общее сообщение выводится только когда не заполнено ни одно обязательное поле
+            if (nameEmpty && leaderEmpty)
             {
                 MessageBox.Show("Заполните обязательные поля!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+            // Если заполнено частично, указываем конкретное незаполненное поле
+            if (nameEmpty)
+            {
+                MessageBox.Show("Введите название бригады!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtName.Focus();
+                return;
+            }
+
+            // Проверка длины названия бригады: минимум 2 символа
+            if (txtName.Text.Trim().Length < 2)
+            {
+                MessageBox.Show("Название бригады должно содержать не менее 2 символов!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtName.Focus();
+                return;
+            }
+
+            if (leaderEmpty)
+            {
+                MessageBox.Show("Выберите бригадира!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                cmbLeader.Focus();
+                return;
+            }
+
             int leaderId = (int)cmbLeader.SelectedValue;
             int objectId = cmbObject.SelectedValue != null ? (int)cmbObject.SelectedValue : 0;
             var workTypeMap = new System.Collections.Generic.Dictionary<string, WorkType>
@@ -399,7 +428,7 @@ namespace ConstructionManagementSystem.Forms
             this.MinimizeBox = false;
 
             int yPos = 20;
-            Controls.Add(new Label { Text = "Рабочий:", Location = new Point(10, yPos), Size = new Size(100, 20) });
+            Controls.Add(new Label { Text = "* Рабочий:", Location = new Point(10, yPos), Size = new Size(100, 20) });
             cmbWorker = new ComboBox { Location = new Point(120, yPos), Width = 280, DropDownStyle = ComboBoxStyle.DropDownList };
             cmbWorker.DisplayMember = "FullName"; cmbWorker.ValueMember = "Id";
             var allWorkers = repository.GetWorkers() ?? new System.Collections.Generic.List<Worker>();
@@ -552,7 +581,7 @@ namespace ConstructionManagementSystem.Forms
             }).ToList();
 
             workersGrid.DataSource = workers;
-            // ✅ УБРАНО: AddRowNumbers вызывается автоматически через DataBindingComplete
+            // AddRowNumbers вызывается автоматически через DataBindingComplete
         }
 
         // === ВСПОМОГАТЕЛЬНЫЙ МЕТОД: добавление порядковых номеров ===
@@ -648,7 +677,7 @@ namespace ConstructionManagementSystem.Forms
             this.MinimizeBox = false;
 
             int yPos = 20;
-            Controls.Add(new Label { Text = "ФИО:", Location = new Point(10, yPos), Size = new Size(100, 20) });
+            Controls.Add(new Label { Text = "* ФИО:", Location = new Point(10, yPos), Size = new Size(100, 20) });
             Controls.Add(txtFullName = new TextBox { Location = new Point(120, yPos), Width = 280 }); yPos += 35;
 
             Controls.Add(new Label { Text = "Специальность:", Location = new Point(10, yPos), Size = new Size(100, 20) });

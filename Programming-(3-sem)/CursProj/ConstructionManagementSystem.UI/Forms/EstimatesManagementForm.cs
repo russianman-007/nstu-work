@@ -345,24 +345,24 @@ namespace ConstructionManagementSystem.Forms
             cmbObject = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
             cmbObject.DataSource = repository.GetObjects();
             cmbObject.DisplayMember = "Name"; cmbObject.ValueMember = "Id";
-            AddField("Объект:", cmbObject);
+            AddField("* Объект:", cmbObject);
 
             txtMaterialName = new TextBox();
-            AddField("Материал:", txtMaterialName);
+            AddField("* Материал:", txtMaterialName);
 
             cmbUnit = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
             cmbUnit.Items.AddRange(new object[] { "м³", "м²", "шт", "кг", "т", "л" });
             cmbUnit.SelectedIndex = 0;
-            AddField("Ед. изм.:", cmbUnit);
+            AddField("Единица измерения:", cmbUnit);
 
             txtPlannedQuantity = new TextBox();
-            AddField("План. кол-во:", txtPlannedQuantity);
+            AddField("* План. количество:", txtPlannedQuantity);
 
             txtActualQuantity = new TextBox { Text = "0" };
-            AddField("Факт. кол-во:", txtActualQuantity);
+            AddField("* Факт. количество:", txtActualQuantity);
 
             txtUnitPrice = new TextBox();
-            AddField("Цена за ед.:", txtUnitPrice);
+            AddField("* Цена за единицу:", txtUnitPrice);
 
             txtUnitPrice.TextChanged += TxtUnitPrice_TextChanged;
             txtUnitPrice.Leave += TxtUnitPrice_Leave;

@@ -468,7 +468,7 @@ namespace ConstructionManagementSystem.Forms
 
             var lblName = new Label
             {
-                Text = "Название:",
+                Text = "* Название:",
                 Location = new Point(10, yPos),
                 Size = new Size(100, 20)
             };
@@ -509,7 +509,7 @@ namespace ConstructionManagementSystem.Forms
 
             var lblSite = new Label
             {
-                Text = "Участок:",
+                Text = "* Участок:",
                 Location = new Point(10, yPos),
                 Size = new Size(100, 20)
             };
@@ -526,7 +526,7 @@ namespace ConstructionManagementSystem.Forms
 
             var lblCustomer = new Label
             {
-                Text = "Заказчик:",
+                Text = "* Заказчик:",
                 Location = new Point(10, yPos),
                 Size = new Size(100, 20)
             };
@@ -543,7 +543,7 @@ namespace ConstructionManagementSystem.Forms
 
             var lblBudget = new Label
             {
-                Text = "Бюджет:",
+                Text = "* Бюджет:",
                 Location = new Point(10, yPos),
                 Size = new Size(100, 20)
             };
@@ -725,6 +725,14 @@ namespace ConstructionManagementSystem.Forms
                 MessageBox.Show("Бюджет не может быть меньше 1000 ₽!", "Предупреждение",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtBudget.Focus();
+                return;
+            }
+
+            if (cmbSite.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите участок!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cmbSite.Focus();
                 return;
             }
 

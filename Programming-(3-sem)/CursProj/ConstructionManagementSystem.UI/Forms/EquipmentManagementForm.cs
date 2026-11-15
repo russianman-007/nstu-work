@@ -477,7 +477,7 @@ namespace ConstructionManagementSystem.Forms
 
             int yPos = START_Y;
 
-            Controls.Add(new Label { Text = "Название:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
+            Controls.Add(new Label { Text = "* Название:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             Controls.Add(txtName = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH });
             yPos += ROW_HEIGHT;
 
@@ -493,7 +493,7 @@ namespace ConstructionManagementSystem.Forms
             cmbType.SelectedIndex = 0;
             yPos += ROW_HEIGHT;
 
-            Controls.Add(new Label { Text = "Управление:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
+            Controls.Add(new Label { Text = "* Управление:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             Controls.Add(cmbDepartment = new ComboBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, DropDownStyle = ComboBoxStyle.DropDownList });
             cmbDepartment.DataSource = repository.GetDepartments();
             cmbDepartment.DisplayMember = "Name";
@@ -547,14 +547,41 @@ namespace ConstructionManagementSystem.Forms
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtName.Text) || cmbDepartment.SelectedValue == null)
+            bool nameEmpty = string.IsNullOrWhiteSpace(txtName.Text);
+            bool departmentEmpty = cmbDepartment.SelectedValue == null;
+
+            // Общее сообщение выводится только когда не заполнено ни одно обязательное поле
+            if (nameEmpty && departmentEmpty)
             {
                 MessageBox.Show("Заполните обязательные поля!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            string inventoryNumber = $"INV-{DateTime.Now.Year}-{new Random().Next(1000, 9999)}";
+            // Если заполнено частично, указываем конкретное незаполненное поле
+            if (nameEmpty)
+            {
+                MessageBox.Show("Введите название техники!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtName.Focus();
+                return;
+            }
 
+            // Проверка длины названия техники: минимум 3 символа
+            if (txtName.Text.Trim().Length < 3)
+            {
+                MessageBox.Show("Название техники должно содержать не менее 3 символов!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtName.Focus();
+                return;
+            }
+
+            if (departmentEmpty)
+            {
+                MessageBox.Show("Выберите управление!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                cmbDepartment.Focus();
+                return;
+            }
+
+            string inventoryNumber = $"INV-{DateTime.Now.Year}-{new Random().Next(1000, 9999)}";
             if (editingEquipment == null)
             {
                 repository.AddEquipment(new Equipment
@@ -611,7 +638,7 @@ namespace ConstructionManagementSystem.Forms
 
             int yPos = START_Y;
 
-            var lblObject = new Label { Text = "Объект:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
+            var lblObject = new Label { Text = "* Объект:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
             cmbObject = new ComboBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, DropDownStyle = ComboBoxStyle.DropDownList };
             cmbObject.DataSource = repository.GetObjects();
             cmbObject.DisplayMember = "Name";
