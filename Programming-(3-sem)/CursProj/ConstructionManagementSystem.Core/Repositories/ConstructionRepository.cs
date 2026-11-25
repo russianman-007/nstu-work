@@ -115,39 +115,205 @@ namespace ConstructionManagementSystem.Repositories
 
         private void InitializeSampleData()
         {
-            if (!departments.Any())
+            // ========================================
+            // 1. СОТРУДНИКИ (создаём первыми, чтобы получить ID для связей)
+            // ========================================
+            var head = new Employee
             {
-                AddDepartment(new ConstructionDepartment
-                {
-                    Name = "ООО \"Стандарт\"",
-                    Address = "г. Русский, ул. Полевая",
-                    DepartmentHeadId = 0  // Руководитель не назначен
-                });
-            }
+                FullName = "Палкин Сергей Иванович",
+                Phone = "+7 (900) 111-11-11",
+                Email = "petrov@standart.ru",
+                Position = Position.DepartmentHead,
+                SiteId = null,
+                IsBrigadeLeader = false,
+                Education = "Высшее",
+                ExperienceYears = 15,
+                Certification = "Аттестат соответствия"
+            };
+            AddEmployee(head);
 
+            var siteManager = new Employee
+            {
+                FullName = "Рудников Алексей Петрович",
+                Phone = "+7 (900) 222-22-22",
+                Email = "sidorov@standart.ru",
+                Position = Position.SiteManager,
+                SiteId = null,
+                IsBrigadeLeader = false,
+                Education = "Высшее",
+                ExperienceYears = 10,
+                Certification = "Допуск СРО"
+            };
+            AddEmployee(siteManager);
+
+            var foreman = new Employee
+            {
+                FullName = "Николаев Иван Николаевич",
+                Phone = "+7 (900) 333-33-33",
+                Email = "ivanov@standart.ru",
+                Position = Position.Foreman,
+                SiteId = null,
+                IsBrigadeLeader = true,
+                Education = "Среднее специальное",
+                ExperienceYears = 8,
+                Certification = "Удостоверение прораба"
+            };
+            AddEmployee(foreman);
+
+            // Рабочие (создаются через AddWorker, бригаду назначим после создания бригады)
+            var concreteWorker = new Worker
+            {
+                FullName = "Кузнецов Павел Андреевич",
+                Phone = "+7 (900) 444-44-44",
+                Email = "",
+                Specialty = WorkerSpecialty.ConcreteWorker,
+                BrigadeId = 0,
+                SiteId = null,
+                QualificationLevel = "4 разряд",
+                HireDate = DateTime.Now.AddYears(-3),
+                HasSafetyCertification = true
+            };
+            AddWorker(concreteWorker);
+
+            var driver = new Worker
+            {
+                FullName = "Морозов Игорь Владимирович",
+                Phone = "+7 (900) 555-55-55",
+                Email = "",
+                Specialty = WorkerSpecialty.Driver,
+                BrigadeId = 0,
+                SiteId = null,
+                QualificationLevel = "3 разряд",
+                HireDate = DateTime.Now.AddYears(-2),
+                HasSafetyCertification = true
+            };
+            AddWorker(driver);
+
+            // ========================================
+            // 2. ЗАКАЗЧИКИ
+            // ========================================
             if (!customers.Any(c => c.Name == "Городская администрация"))
-            {
-                AddCustomer(new Customer
-                {
-                    Name = "Городская администрация"
-                });
-            }
-
+                AddCustomer(new Customer { Name = "Городская администрация" });
             if (!customers.Any(c => c.Name == "ГК 'Дом-Строй'"))
-            {
-                AddCustomer(new Customer
-                {
-                    Name = "ГК 'Дом-Строй'"
-                });
-            }
-
+                AddCustomer(new Customer { Name = "ГК 'Дом-Строй'" });
             if (!customers.Any(c => c.Name == "ПАО 'Транс-Инженеринг'"))
+                AddCustomer(new Customer { Name = "ПАО 'Транс-Инженеринг'" });
+
+            // ========================================
+            // 3. СТРОИТЕЛЬНОЕ УПРАВЛЕНИЕ (руководитель — head)
+            // ========================================
+            var department = new ConstructionDepartment
             {
-                AddCustomer(new Customer
-                {
-                    Name = "ПАО 'Транс-Инженеринг'"
-                });
-            }
+                Name = "ООО \"Стандарт\"",
+                Address = "г. Русский, ул. Полевая",
+                DepartmentHeadId = head.Id
+            };
+            AddDepartment(department);
+
+            // ========================================
+            // 4. УЧАСТОК (привязан к управлению, начальник — siteManager)
+            // ========================================
+            var site = new Site
+            {
+                Name = "Территория дома №23",
+                Address = "г. Русский, ул. Титова",
+                DepartmentId = department.Id,
+                SiteManagerId = siteManager.Id
+            };
+            AddSite(site);
+
+            // Обновляем SiteId у начальника участка (связь двусторонняя)
+            siteManager.SiteId = site.Id;
+            UpdateEmployee(siteManager);
+
+            // ========================================
+            // 5. ОБЪЕКТ (на участке, с заказчиком)
+            // ========================================
+            var customer = customers.FirstOrDefault(c => c.Name == "ГК 'Дом-Строй'");
+            var obj = new ConstructionObject
+            {
+                Name = "Бетонная парковка",
+                Type = ObjectType.Road,
+                SiteId = site.Id,
+                CustomerId = customer?.Id ?? 0,
+                StartDate = DateTime.Now.AddMonths(-1),
+                PlannedEndDate = DateTime.Now.AddMonths(5),
+                Budget = 2100000,
+                ActualCost = 0,
+                Width = 50,
+                LanesCount = 20
+            };
+            AddObject(obj);
+
+            // ========================================
+            // 6. БРИГАДА (прораб во главе, привязана к объекту)
+            // ========================================
+            var brigade = new Brigade
+            {
+                Name = "Бетонщики",
+                LeaderId = foreman.Id,
+                CurrentObjectId = obj.Id,
+                CurrentWorkType = WorkType.Foundation
+            };
+            AddBrigade(brigade);
+
+            // ========================================
+            // 7. РАБОЧИЕ В БРИГАДЕ (привязываем к бригаде)
+            // ========================================
+            concreteWorker.BrigadeId = brigade.Id;
+            concreteWorker.SiteId = site.Id;
+            UpdateWorker(concreteWorker);
+
+            driver.BrigadeId = brigade.Id;
+            driver.SiteId = site.Id;
+            UpdateWorker(driver);
+
+            // ========================================
+            // 8. ТЕХНИКА (бетономешалка, в управлении, на объекте)
+            // ========================================
+            var equipment = new Equipment
+            {
+                Name = "КамАЗ-58149",
+                Type = EquipmentType.ConcreteMixer,
+                InventoryNumber = $"INV-{DateTime.Now.Year}-1001",
+                DepartmentId = department.Id,
+                CurrentObjectId = obj.Id,
+                AssignedDate = DateTime.Now.AddMonths(-1),
+                Status = "В работе",
+                IsBroken = false
+            };
+            AddEquipment(equipment);
+
+            // ========================================
+            // 9. ГРАФИК РАБОТ (связан с бетоном, бригада, объект)
+            // ========================================
+            var schedule = new WorkSchedule
+            {
+                ObjectId = obj.Id,
+                WorkType = WorkType.Foundation,
+                BrigadeId = brigade.Id,
+                PlannedStartDate = DateTime.Now.AddMonths(-1),
+                PlannedEndDate = DateTime.Now.AddMonths(1),
+                ActualStartDate = DateTime.Now.AddMonths(-1),
+                ActualEndDate = null,
+                Status = WorkStatus.InProgress,
+                Notes = "Фундаментные работы"
+            };
+            AddWorkSchedule(schedule);
+
+            // ========================================
+            // 10. СМЕТА (связана с бетоном, для объекта)
+            // ========================================
+            var estimate = new Estimate
+            {
+                ObjectId = obj.Id,
+                MaterialName = "Бетон М300",
+                Unit = "м³",
+                PlannedQuantity = 100,
+                ActualQuantity = 110,
+                UnitPrice = 4215
+            };
+            AddEstimate(estimate);
 
             SaveData();
         }
@@ -480,6 +646,7 @@ namespace ConstructionManagementSystem.Repositories
         public void DeleteWorkSchedule(int scheduleId)
         {
             workSchedules.RemoveAll(ws => ws.Id == scheduleId);
+            workReports.RemoveAll(wr => wr.WorkScheduleId == scheduleId);
             SaveData();
         }
 
