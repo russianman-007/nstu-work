@@ -134,6 +134,14 @@ namespace ConstructionManagementSystem.Forms
 
             personnelGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
+                Name = "Type",
+                HeaderText = "Тип",
+                DataPropertyName = "Type",
+                Visible = false
+            });
+
+            personnelGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
                 Name = "Id",
                 HeaderText = "ID",
                 DataPropertyName = "Id",
@@ -191,9 +199,10 @@ namespace ConstructionManagementSystem.Forms
                 e.Id,
                 e.FullName,
                 Position = GetPositionInRussian(e.Position),
-                EmployeeType = "Инженерно-техннический персонал",
+                EmployeeType = "Инженерно-технический персонал",
+                Type = "Employee",
                 Phone = e.Phone,
-                Email = string.IsNullOrWhiteSpace(e.Email) ? "-" : e.Email,  // ✅ Показываем прочерк если пусто
+                Email = string.IsNullOrWhiteSpace(e.Email) ? "-" : e.Email,
                 Experience = e.ExperienceYears?.ToString() ?? "-"
             }).ToList();
 
@@ -203,8 +212,9 @@ namespace ConstructionManagementSystem.Forms
                 w.FullName,
                 Position = GetWorkerSpecialtyInRussian(w.Specialty),
                 EmployeeType = "Рабочий",
-                Phone = string.IsNullOrWhiteSpace(w.Phone) ? "-" : w.Phone,
-                Email = string.IsNullOrWhiteSpace(w.Email) ? "-" : w.Email,
+                Type = "Worker",
+                Phone = "-",
+                Email = "-",
                 Experience = w.HireDate.HasValue ? $"{(DateTime.Now.Year - w.HireDate.Value.Year)}" : "-"
             }).ToList();
 
@@ -228,6 +238,7 @@ namespace ConstructionManagementSystem.Forms
                 p.FullName,
                 p.Position,
                 p.EmployeeType,
+                p.Type,
                 p.Phone,
                 p.Email,
                 p.Experience
@@ -334,60 +345,46 @@ namespace ConstructionManagementSystem.Forms
 
         private void ContextMenu_Edit_Click(object? sender, EventArgs e)
         {
-            int employeeId = GetSelectedEmployeeId();
-            if (employeeId < 0) return;
+            if (personnelGrid.CurrentRow?.DataBoundItem == null) { MessageBox.Show("Выберите сотрудника."); return; }
+            int id = (int)personnelGrid.CurrentRow.Cells["Id"].Value;
+            string type = personnelGrid.CurrentRow.Cells["Type"].Value?.ToString();
 
-            var employee = repository.GetEmployee(employeeId);
-            if (employee != null)
+            if (type == "Worker")
             {
-                var form = new AddEmployeeForm(repository, employee);
-                if (form.ShowDialog() == DialogResult.OK) LoadPersonnel();
-                return;
-            }
-
-            var worker = repository.GetWorker(employeeId);
-            if (worker != null)
-            {
+                var worker = repository.GetWorker(id);
+                if (worker == null) { MessageBox.Show("Рабочий не найден."); return; }
                 var form = new AddEmployeeForm(repository, worker);
                 if (form.ShowDialog() == DialogResult.OK) LoadPersonnel();
-                return;
             }
-
-            MessageBox.Show("Не удалось загрузить данные.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else
+            {
+                var employee = repository.GetEmployee(id);
+                if (employee == null) { MessageBox.Show("Сотрудник не найден."); return; }
+                var form = new AddEmployeeForm(repository, employee);
+                if (form.ShowDialog() == DialogResult.OK) LoadPersonnel();
+            }
         }
 
         private void ContextMenu_Delete_Click(object? sender, EventArgs e)
         {
-            int employeeId = GetSelectedEmployeeId();
-            if (employeeId < 0) return;
+            if (personnelGrid.CurrentRow?.DataBoundItem == null) { MessageBox.Show("Выберите сотрудника."); return; }
+            int id = (int)personnelGrid.CurrentRow.Cells["Id"].Value;
+            string type = personnelGrid.CurrentRow.Cells["Type"].Value?.ToString();
 
-            var employee = repository.GetEmployee(employeeId);
-            if (employee != null)
+            if (type == "Worker")
             {
-                string employeeName = employee.FullName;
-                if (MessageBox.Show($"Удалить сотрудника \"{employeeName}\"?", "Подтверждение удаления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                {
-                    repository.DeleteEmployee(employeeId);
-                    LoadPersonnel();
-                    MessageBox.Show("Сотрудник удален.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                return;
+                var worker = repository.GetWorker(id);
+                if (worker != null && MessageBox.Show($"Удалить рабочего \"{worker.FullName}\"?", "Подтверждение",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                { repository.DeleteWorker(id); LoadPersonnel(); }
             }
-
-            var worker = repository.GetWorker(employeeId);
-            if (worker != null)
+            else
             {
-                string workerName = worker.FullName;
-                if (MessageBox.Show($"Удалить рабочего \"{workerName}\"?", "Подтверждение удаления", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                {
-                    repository.DeleteWorker(employeeId);
-                    LoadPersonnel();
-                    MessageBox.Show("Рабочий удален.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                return;
+                var employee = repository.GetEmployee(id);
+                if (employee != null && MessageBox.Show($"Удалить сотрудника \"{employee.FullName}\"?", "Подтверждение",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                { repository.DeleteEmployee(id); LoadPersonnel(); }
             }
-
-            MessageBox.Show("Не удалось найти запись для удаления.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -425,8 +422,7 @@ namespace ConstructionManagementSystem.Forms
         private void InitializeForm()
         {
             this.Text = editingEmployee != null ? "Редактировать сотрудника" :
-                       editingWorker != null ? "Редактировать рабочего" : "Добавить сотрудника";
-
+                        editingWorker != null ? "Редактировать рабочего" : "Добавить сотрудника";
             this.Size = new Size(450, 295);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -443,19 +439,35 @@ namespace ConstructionManagementSystem.Forms
             Controls.Add(cmbPosition = new ComboBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH, DropDownStyle = ComboBoxStyle.DropDownList });
             yPos += ROW_HEIGHT;
 
-            var positions = Enum.GetValues(typeof(Position)).Cast<Position>();
-            var specialties = Enum.GetValues(typeof(WorkerSpecialty)).Cast<WorkerSpecialty>();
-            foreach (var pos in positions) cmbPosition.Items.Add(GetPositionInRussian(pos));
-            foreach (var spec in specialties) cmbPosition.Items.Add(GetWorkerSpecialtyInRussian(spec));
+            // ✅ Заполняем ComboBox только теми значениями, которые относятся к типу редактируемой записи.
+            // Если редактируется рабочий — только специальности рабочих.
+            // Если редактируется ИТР — только должности ИТР.
+            // Если создаётся новая запись — оба списка (пользователь сам выберет тип).
+            if (editingWorker != null)
+            {
+                var specialties = Enum.GetValues(typeof(WorkerSpecialty)).Cast<WorkerSpecialty>();
+                foreach (var spec in specialties) cmbPosition.Items.Add(GetWorkerSpecialtyInRussian(spec));
+            }
+            else if (editingEmployee != null)
+            {
+                var positions = Enum.GetValues(typeof(Position)).Cast<Position>();
+                foreach (var pos in positions) cmbPosition.Items.Add(GetPositionInRussian(pos));
+            }
+            else
+            {
+                var positions = Enum.GetValues(typeof(Position)).Cast<Position>();
+                var specialties = Enum.GetValues(typeof(WorkerSpecialty)).Cast<WorkerSpecialty>();
+                foreach (var pos in positions) cmbPosition.Items.Add(GetPositionInRussian(pos));
+                foreach (var spec in specialties) cmbPosition.Items.Add(GetWorkerSpecialtyInRussian(spec));
+            }
 
-            // ✅ МАСКА ТЕЛЕФОНА: +7 (XXX) XXX-XX-XX
             Controls.Add(new Label { Text = "* Телефон:", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) });
             Controls.Add(txtPhone = new MaskedTextBox
             {
                 Location = new Point(FIELD_X, yPos),
                 Width = FIELD_WIDTH,
-                Mask = "+7 (000) 000-00-00",  // ✅ Маска ввода
-                PromptChar = '_'  // ✅ Символ заполнения
+                Mask = "+7 (000) 000-00-00",
+                PromptChar = '_'
             });
             yPos += ROW_HEIGHT;
 

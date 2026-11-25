@@ -435,7 +435,7 @@ namespace ConstructionManagementSystem.Forms
             cmbWorker.DataSource = allWorkers;
             Controls.Add(cmbWorker); yPos += 35;
 
-            lblSpecialty = new Label { Text = "Специальность: -", Location = new Point(10, yPos), Size = new Size(300, 20), ForeColor = Color.Gray };
+            lblSpecialty = new Label { Text = "Специальность: -", Location = new Point(10, yPos), Size = new Size(300, 20) };
             cmbWorker.SelectedIndexChanged += (s, e) => { if (cmbWorker.SelectedItem is Worker w) lblSpecialty.Text = $"Специальность: {GetSpecialtyInRussian(w.Specialty)}"; };
             Controls.Add(lblSpecialty); yPos += 45;
 
@@ -677,13 +677,20 @@ namespace ConstructionManagementSystem.Forms
             this.MinimizeBox = false;
 
             int yPos = 20;
+
             Controls.Add(new Label { Text = "* ФИО:", Location = new Point(10, yPos), Size = new Size(100, 20) });
             Controls.Add(txtFullName = new TextBox { Location = new Point(120, yPos), Width = 280 }); yPos += 35;
 
             Controls.Add(new Label { Text = "Специальность:", Location = new Point(10, yPos), Size = new Size(100, 20) });
             Controls.Add(cmbSpecialty = new ComboBox { Location = new Point(120, yPos), Width = 280, DropDownStyle = ComboBoxStyle.DropDownList });
-            cmbSpecialty.DataSource = Enum.GetValues(typeof(WorkerSpecialty));
-            cmbSpecialty.Format += (s, e) => { if (e.Value is WorkerSpecialty spec) e.Value = GetSpecialtyInRussian(spec); };
+
+            // ✅ DataSource — список русских названий, а не enum.
+            // Это гарантирует, что и в списке, и в выбранном значении будут русские названия.
+            cmbSpecialty.DataSource = Enum.GetValues(typeof(WorkerSpecialty))
+                .Cast<WorkerSpecialty>()
+                .Select(s => GetSpecialtyInRussian(s))
+                .ToList();
+
             yPos += 35;
 
             Controls.Add(new Label { Text = "Разряд:", Location = new Point(10, yPos), Size = new Size(100, 20) });
@@ -704,7 +711,11 @@ namespace ConstructionManagementSystem.Forms
         private void FillFieldsForEdit()
         {
             txtFullName.Text = editingWorker.FullName;
-            cmbSpecialty.SelectedItem = editingWorker.Specialty;
+
+            // ✅ Устанавливаем выбранное значение через русское название,
+            // так как DataSource теперь содержит строки, а не enum.
+            cmbSpecialty.SelectedItem = GetSpecialtyInRussian(editingWorker.Specialty);
+
             txtQualification.Text = editingWorker.QualificationLevel ?? "";
             dtpHireDate.Value = editingWorker.HireDate ?? DateTime.Now;
             chkSafetyCert.Checked = editingWorker.HasSafetyCertification;
