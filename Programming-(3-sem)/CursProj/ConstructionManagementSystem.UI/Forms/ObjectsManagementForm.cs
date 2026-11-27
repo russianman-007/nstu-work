@@ -791,8 +791,8 @@ namespace ConstructionManagementSystem.Forms
         {
             repository = repo;
             objectItem = obj;
-            specificationsCache = cache;
             objectType = obj.Type;
+            specificationsCache = cache;
             InitializeForm();
             FillFieldsForEdit();
         }
@@ -809,60 +809,66 @@ namespace ConstructionManagementSystem.Forms
             int yPos = START_Y;
 
             var fieldLabels = GetSpecificationLabels(objectType);
-            bool isRoad = objectType == ObjectType.Road;
 
-            var lblSpec1 = new Label { Text = fieldLabels[0] + ":", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
-            txtSpec1 = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH };
-            Controls.Add(lblSpec1); Controls.Add(txtSpec1);
-            yPos += ROW_HEIGHT;
-
-            var lblSpec2 = new Label { Text = fieldLabels[1] + ":", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
-            txtSpec2 = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH };
-            Controls.Add(lblSpec2); Controls.Add(txtSpec2);
-            yPos += ROW_HEIGHT;
-
-            var lblSpec3 = new Label { Text = fieldLabels[2] + ":", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
-            txtSpec3 = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH };
-            Controls.Add(lblSpec3); Controls.Add(txtSpec3);
-            yPos += ROW_HEIGHT;
-
-            var lblSpec4 = new Label { Text = fieldLabels[3] + ":", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
-
-            if (isRoad)
+            // Создаем 4 поля характеристик
+            for (int i = 0; i < 4; i++)
             {
-                cmbSpec4 = new ComboBox
+                var lbl = new Label { Text = fieldLabels[i] + ":", Location = new Point(10, yPos), Size = new Size(LABEL_WIDTH, 20) };
+                Controls.Add(lbl);
+
+                // Для дорог 4-е поле — ComboBox с типом покрытия
+                if (objectType == ObjectType.Road && i == 3)
                 {
-                    Location = new Point(FIELD_X, yPos),
-                    Width = FIELD_WIDTH,
-                    DropDownStyle = ComboBoxStyle.DropDownList
-                };
-                cmbSpec4.Items.AddRange(new[] { "Асфальт", "Бетон", "Гравий", "Грунт", "Плиты" });
-                Controls.Add(lblSpec4); Controls.Add(cmbSpec4);
-            }
-            else
-            {
-                txtSpec4 = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH };
-                Controls.Add(lblSpec4); Controls.Add(txtSpec4);
-            }
-            yPos += ROW_HEIGHT + 10;
+                    cmbSpec4 = new ComboBox
+                    {
+                        Location = new Point(FIELD_X, yPos),
+                        Width = FIELD_WIDTH,
+                        DropDownStyle = ComboBoxStyle.DropDownList
+                    };
+                    cmbSpec4.Items.AddRange(new[] { "Асфальт", "Бетон", "Гравий", "Грунт", "Плиты" });
+                    Controls.Add(cmbSpec4);
+                }
+                else
+                {
+                    var txt = new TextBox { Location = new Point(FIELD_X, yPos), Width = FIELD_WIDTH };
+                    txt.KeyPress += TxtSpec_KeyPress;  // Ограничение: только цифры
+                    Controls.Add(txt);
 
-            var btnSave = new Button
-            {
-                Text = "Сохранить",
-                Location = new Point(FIELD_X, yPos),
-                Size = new Size(100, 30)
-            };
-            var btnCancel = new Button
-            {
-                Text = "Отмена",
-                Location = new Point(FIELD_X + 120, yPos),
-                Size = new Size(100, 30)
-            };
+                    // Сохраняем ссылку на TextBox в массив
+                    if (i == 0) txtSpec1 = txt;
+                    else if (i == 1) txtSpec2 = txt;
+                    else if (i == 2) txtSpec3 = txt;
+                    else txtSpec4 = txt;
+                }
 
+                yPos += ROW_HEIGHT;
+            }
+
+            yPos += 10;
+
+            var btnSave = new Button { Text = "Сохранить", Location = new Point(FIELD_X, yPos), Size = new Size(100, 30) };
+            var btnCancel = new Button { Text = "Отмена", Location = new Point(FIELD_X + 120, yPos), Size = new Size(100, 30) };
             btnSave.Click += BtnSave_Click;
             btnCancel.Click += (s, e) => { DialogResult = DialogResult.Cancel; Close(); };
+            Controls.Add(btnSave);
+            Controls.Add(btnCancel);
+        }
 
-            Controls.Add(btnSave); Controls.Add(btnCancel);
+        private void TxtSpec_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (char.IsControl(e.KeyChar))
+                return;
+
+            if (char.IsDigit(e.KeyChar))
+                return;
+
+            // Разделитель разрешён только один раз
+            if ((e.KeyChar == ',' || e.KeyChar == '.')
+                && !((TextBox)sender).Text.Contains(",")
+                && !((TextBox)sender).Text.Contains("."))
+                return;
+
+            e.Handled = true;
         }
 
         private string[] GetSpecificationLabels(ObjectType type)
@@ -915,27 +921,45 @@ namespace ConstructionManagementSystem.Forms
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            string spec4Value = objectType == ObjectType.Road
-                ? (cmbSpec4?.SelectedItem?.ToString() ?? "")
+            // Проверка: если поле заполнено, оно должно быть числом
+            TextBox[] textBoxes = new[] { txtSpec1, txtSpec2, txtSpec3, txtSpec4 };
+            string[] labels = GetSpecificationLabels(objectType);
+
+            for (int i = 0; i < textBoxes.Length; i++)
+            {
+                if (textBoxes[i] == null) continue;  // Для дорог 4-е поле — ComboBox, пропускаем
+
+                string text = textBoxes[i].Text.Trim();
+                if (string.IsNullOrEmpty(text))
+                    continue;
+
+                if (!decimal.TryParse(text.Replace(',', '.'), System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture, out _))
+                {
+                    MessageBox.Show($"Поле \"{labels[i]}\" должно содержать только число!",
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
+            // Получаем значение 4-го поля
+            string spec4Value = (objectType == ObjectType.Road && cmbSpec4 != null)
+                ? (cmbSpec4.SelectedItem?.ToString() ?? "")
                 : (txtSpec4?.Text.Trim() ?? "");
 
             var specs = new ObjectSpecifications
             {
                 ObjectId = objectItem.Id,
-                Spec1 = txtSpec1.Text.Trim(),
-                Spec2 = txtSpec2.Text.Trim(),
-                Spec3 = txtSpec3.Text.Trim(),
+                Spec1 = txtSpec1?.Text.Trim() ?? "",
+                Spec2 = txtSpec2?.Text.Trim() ?? "",
+                Spec3 = txtSpec3?.Text.Trim() ?? "",
                 Spec4 = spec4Value
             };
 
             if (specificationsCache.ContainsKey(objectItem.Id))
-            {
                 specificationsCache[objectItem.Id] = specs;
-            }
             else
-            {
                 specificationsCache.Add(objectItem.Id, specs);
-            }
 
             MessageBox.Show("Характеристики успешно сохранены!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             DialogResult = DialogResult.OK;

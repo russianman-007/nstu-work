@@ -213,8 +213,8 @@ namespace ConstructionManagementSystem.Forms
                 Position = GetWorkerSpecialtyInRussian(w.Specialty),
                 EmployeeType = "Рабочий",
                 Type = "Worker",
-                Phone = "-",
-                Email = "-",
+                Phone = w.Phone,
+                Email = string.IsNullOrWhiteSpace(w.Email) ? "-" : w.Email,
                 Experience = w.HireDate.HasValue ? $"{(DateTime.Now.Year - w.HireDate.Value.Year)}" : "-"
             }).ToList();
 
